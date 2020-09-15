@@ -5,7 +5,7 @@ setup(
     packages=find_packages(),
     version='0.0.1',
     author='Zhang Dongkun, Wang Yunkai',
-    author_email='zhangdongkun98@gmail.com',
+    author_email='zhangdongkun98@gmail.com, wangyunkai.zju@gmail.com',
     url='https://github.com/zhangdongkun98/carla-utils',
     description='carla',
     install_requires=[
