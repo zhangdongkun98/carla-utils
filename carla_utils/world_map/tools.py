@@ -4,7 +4,7 @@ import carla
 import random
 import time
 
-def connect_to_server(host, port, timeout=2.0, map_name=None):
+def connect_to_server(host, port, timeout=2.0, map_name='None'):
     client = carla.Client(host, port)
     client.set_timeout(timeout)
     available_map_names = client.get_available_maps()

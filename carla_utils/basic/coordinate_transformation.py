@@ -43,6 +43,9 @@ class RotationMatrix(object):
         return np_dot(r(roll), p(pitch), y(yaw))
     @staticmethod
     def rpy(roll, pitch, yaw):
+        '''
+            roll first, picth then, yaw final
+        '''
         r, p, y = RotationMatrix.roll, RotationMatrix.pitch, RotationMatrix.yaw
         return np_dot(y(yaw), p(pitch), r(roll))
 
@@ -99,3 +102,15 @@ class Euler(object):
             if (R - R_ref).sum() > Euler.MATRIX_MATCH_TOLERANCE:
                 raise ValueError("Could not find valid pitch angle")
             return roll, pitch_poss[1], yaw
+
+
+class Reverse(object):
+    @staticmethod
+    def x():
+        return np.diag([-1,1,1])
+    @staticmethod
+    def y():
+        return np.diag([1,-1,1])
+    @staticmethod
+    def z():
+        return np.diag([1,1,-1])
