@@ -50,6 +50,15 @@ class RotationMatrix(object):
         return np_dot(y(yaw), p(pitch), r(roll))
 
 
+def RotationMatrix2D(theta):
+    R = np.identity(2)
+    R[0,0] = np.cos(theta)
+    R[1,1] = np.cos(theta)
+    R[1,0] = np.sin(theta)
+    R[0,1] =-np.sin(theta)
+    return R
+
+
 def HomogeneousMatrix(*args):
     if len(args) == 1:
         xyzrpy = args[0]

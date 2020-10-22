@@ -32,3 +32,5 @@ import matplotlib.pyplot as plt
 def plotArrow2D(x, y, theta, length=1.0, width=0.5, fc='r', ec='k'):  # pragma: no cover
     plt.arrow(x, y, length * np.cos(theta), length * np.sin(theta),
               fc=fc, ec=ec, head_width=width, head_length=width)
+
+

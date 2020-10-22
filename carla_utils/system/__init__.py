@@ -1,5 +1,11 @@
-from .tools import load_carla
-load_carla()
+from .tools import load_carla_standard
+load_carla_standard()
+
+try:
+    import carla
+except:
+    print('run this in shell:\n    echo "export PYTHONPATH=\\"\${PYTHONPATH}:/your/carla/server/path\\"" >> ~/.bashrc')
+    exit(0)
 
 from . import env_path
 
@@ -10,3 +16,5 @@ from .tools import parse_json_file, parse_yaml_file_unsafe
 from .tools import mkdir
 
 from .queue import NCQPipe
+
+from pprint import pprint

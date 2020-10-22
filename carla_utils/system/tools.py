@@ -7,25 +7,32 @@ import yaml
 import inspect
 
 
-def load_carla_standard(path):
+def load_carla_standard():
+    candidate_paths = []
+    for path in sys.path:
+        if 'CARLA' in path:
+            candidate_paths.append(path)
     try:
-        sys.path.append(path+'/PythonAPI')
-        sys.path.append(glob.glob(path+'/PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
-            sys.version_info.major,
-            sys.version_info.minor,
-            'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+        for path in candidate_paths:
+            sys.path.append(path+'/PythonAPI/carla')
+            sys.path.append(glob.glob(path+'/PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
+                sys.version_info.major,
+                sys.version_info.minor,
+                'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
     except:
         print('Fail to load carla library')
 
-basic_path = os.path.split(os.path.split(__file__)[0])[0]
+
 def load_carla():
-    path = join(basic_path, 'carla_api/0.9.9.4')
+    basic_path = os.path.split(os.path.split(__file__)[0])[0]
+    path = join(basic_path, 'carla_api')
     try:
         sys.path.append(path+'/carla')
-        sys.path.append(glob.glob(path+'/carla/dist/carla-*%d.%d-%s.egg' % (
+        carla_path = glob.glob(path+'/carla/dist/carla-*%d.%d-%s.egg' % (
             sys.version_info.major,
             sys.version_info.minor,
-            'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+            'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0]
+        sys.path.append(carla_path)
     except:
         print('Fail to load carla library')
 
