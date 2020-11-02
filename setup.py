@@ -13,6 +13,7 @@ setup(
         'scipy',
         'matplotlib',
         'networkx',
+        'multiprocessing',
         'pygame==1.9.6',
         'PyYAML',
         'python-intervals',

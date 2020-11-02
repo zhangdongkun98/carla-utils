@@ -15,6 +15,6 @@ from .tools import printVariable, parse_yaml_file, Singleton, debug
 from .tools import parse_json_file, parse_yaml_file_unsafe
 from .tools import mkdir
 
-from .queue import NCQPipe
+from .multiprocessing import NCQPipe, SharedVariable
 
 from pprint import pprint
