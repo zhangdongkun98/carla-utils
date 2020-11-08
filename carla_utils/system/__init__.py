@@ -4,7 +4,7 @@ load_carla_standard()
 try:
     import carla
 except:
-    print('run this in shell:\n    echo "export PYTHONPATH=\\"\${PYTHONPATH}:/your/carla/server/path\\"" >> ~/.bashrc')
+    print('Fail to import carla')
     exit(0)
 
 from . import env_path

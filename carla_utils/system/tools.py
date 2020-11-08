@@ -8,19 +8,21 @@ import inspect
 
 
 def load_carla_standard():
-    candidate_paths = []
-    for path in sys.path:
-        if 'CARLA' in path:
-            candidate_paths.append(path)
     try:
-        for path in candidate_paths:
-            sys.path.append(path+'/PythonAPI/carla')
-            sys.path.append(glob.glob(path+'/PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
-                sys.version_info.major,
-                sys.version_info.minor,
-                'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+        server_path = os.environ['CARLAPATH']
+    except:
+        print('run this in shell:\n    echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc')
+        exit(0)
+    try:
+        sys.path.append(server_path+'/PythonAPI/carla')
+        sys.path.append(glob.glob(server_path+'/PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
+            sys.version_info.major,
+            sys.version_info.minor,
+            'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
     except:
         print('Fail to load carla library')
+        print('run this in shell:\n    echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc')
+        exit(0)
 
 
 def load_carla():
