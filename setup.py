@@ -13,12 +13,12 @@ setup(
         'scipy',
         'matplotlib',
         'networkx',
-        'multiprocessing',
         'pygame==1.9.6',
         'PyYAML',
         'python-intervals',
         'opencv-python',
-        'open3d-python==0.5.0.0'
+        'open3d-python==0.5.0.0',
+        'tensorboardX',
     ],
 
     include_package_data=True

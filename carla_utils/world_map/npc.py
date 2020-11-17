@@ -41,7 +41,7 @@ class NPC(object):
 			logging.warning(msg, self.number_of_vehicles, number_of_spawn_points)
 			self.number_of_vehicles = number_of_spawn_points
 
-		# @todo cannot import these directly.
+		# todo cannot import these directly.
 		SpawnActor = carla.command.SpawnActor
 		SetAutopilot = carla.command.SetAutopilot
 		FutureActor = carla.command.FutureActor

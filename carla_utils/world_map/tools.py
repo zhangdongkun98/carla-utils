@@ -25,14 +25,37 @@ def set_weather(world, weather):
     return weather
 
 
-def add_vehicle(world, role_name, type_id='vehicle.bmw.grandtourer', spawn_point=None):
-    town_map = world.get_map()
+def create_blueprint(world, type_id, **attributes):
     blueprint_lib = world.get_blueprint_library()
     bp = random.choice(blueprint_lib.filter(type_id))
-    if bp.has_attribute('color'):
-        color = random.choice(bp.get_attribute('color').recommended_values)
-        bp.set_attribute('color', color)
+
+    role_name = attributes.get('role_name', 'hero')
     bp.set_attribute('role_name', role_name)
+
+    if bp.has_attribute('color'):
+        color = attributes.get('color', (255,255,255))
+        color = str(color[0]) + ',' + str(color[1]) + ',' + str(color[2])
+        bp.set_attribute('color', color)
+    if bp.has_attribute('driver_id'):
+        driver_id = random.choice(bp.get_attribute('driver_id').recommended_values)
+        bp.set_attribute('driver_id', driver_id)
+    if bp.has_attribute('is_invincible'):
+        bp.set_attribute('is_invincible', 'true')
+    
+    return bp
+
+def get_spawn_transform(town_map, spawn_point, height=0.1):
+    '''
+        only use x,y of spawn_point
+    '''
+    x, y = spawn_point.x, spawn_point.y
+    spawn_transform = town_map.get_waypoint(carla.Location(x=x, y=y)).transform
+    spawn_transform.location.z += height
+    return spawn_transform
+
+
+def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer', **attributes):
+    bp = create_blueprint(world, type_id, **attributes)
 
     spawn_transforms = town_map.get_spawn_points()
     spawn_transform = random.choice(spawn_transforms) if spawn_transforms else carla.Transform()
@@ -41,30 +64,32 @@ def add_vehicle(world, role_name, type_id='vehicle.bmw.grandtourer', spawn_point
         spawn_transform = random.choice(spawn_transforms) if spawn_transforms else carla.Transform()
         vehicle = world.try_spawn_actor(bp, spawn_transform)
     if spawn_point:
-        respawn_vehicle(town_map, vehicle, spawn_point)
+        spawn_transform = get_spawn_transform(town_map, spawn_point, height=2.0)
+        vehicle.set_transform(spawn_transform)
     time.sleep(0.1)
     print('spawn_point: x={}, y={}'.format(vehicle.get_location().x, vehicle.get_location().y))
     return vehicle
 
-def respawn_vehicle(town_map, vehicle, spawn_point):
-    '''
-        only use x,y of spawn_point
-    '''
-    x, y = spawn_point.x, spawn_point.y
-    spawn_transform = town_map.get_waypoint(carla.Location(x=x, y=y)).transform
-    spawn_transform.location.z += 3
-    vehicle.set_transform(spawn_transform)
 
 
 def get_actor(world, type_id, role_name):
+    '''not suitable for multi-agent'''
     actor_list = world.get_actors()
     for actor in actor_list:
         if actor.type_id == type_id and actor.attributes['role_name'] == role_name:
             return actor
     return None
 
+def get_attached_actor(actor_list, actor):
+    for target_actor in actor_list:
+        print(target_actor.id, target_actor.parent)
+    print()
+
 
 def remove_traffic_light(vehicle):
+    '''
+        @todo
+    '''
     if vehicle.is_at_traffic_light():
         traffic_light = vehicle.get_traffic_light()
         if traffic_light.get_state() == carla.TrafficLightState.Red:
