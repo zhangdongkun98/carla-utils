@@ -2,6 +2,7 @@
 import carla
 import numpy as np
 import copy
+import time
 
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
@@ -22,10 +23,10 @@ class AgentsRoutePlanner(object):
                 config.sampling_resolution
                 config.distance_range
         '''
-        self.world, self.town_map, self.vehicle = world, town_map, vehicle
+        self.world, self.town_map = world, town_map
 
-        self.global_frame_id = config.global_frame_id
-        self.vehicle_frame_id = config.vehicle_frame_id
+        self.global_frame_id = config.get('global_frame_id', 'odom')
+        self.vehicle_frame_id = config.get('vehicle_frame_id', 'base_link')
         self.goal_tolerance = config.goal_tolerance
         self.sampling_resolution = config.sampling_resolution
         self.distance_range = config.distance_range
@@ -36,7 +37,7 @@ class AgentsRoutePlanner(object):
         self.grp.setup()
 
 
-    def trace_route(self, origin, destination):
+    def trace_route(self, origin, destination, time_stamp=time.time()):
         '''
         Args:
             origin, destination: carla.Location

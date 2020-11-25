@@ -10,4 +10,4 @@ from .sensor import createSensoListMaster, CarlaSensorMaster
 
 from . import sensor
 
-from .navigation_utils import AgentsRoutePlanner
+from .utils import AgentsRoutePlanner

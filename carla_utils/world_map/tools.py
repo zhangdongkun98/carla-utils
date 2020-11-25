@@ -1,6 +1,7 @@
 
 import carla
 
+import numpy as np
 import random
 import time
 
@@ -64,7 +65,7 @@ def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer',
         spawn_transform = random.choice(spawn_transforms) if spawn_transforms else carla.Transform()
         vehicle = world.try_spawn_actor(bp, spawn_transform)
     if spawn_point:
-        spawn_transform = get_spawn_transform(town_map, spawn_point, height=2.0)
+        spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.2)
         vehicle.set_transform(spawn_transform)
     time.sleep(0.1)
     print('spawn_point: x={}, y={}'.format(vehicle.get_location().x, vehicle.get_location().y))
@@ -102,10 +103,16 @@ def get_random_spawn_transform(town_map):
     return random.choice(spawn_transforms)
 
 
-def draw_location(world, location, size=0.1, color=carla.Color(0,255,0,255), life_time=50):
-    world.debug.draw_point(location, size=size, color=color, life_time=life_time)
+def draw_arrow(world, transform, thickness=0.1, arrow_length=1.0, color=(255,0,0), life_time=1.0):
+    begin = transform.location + carla.Location(z=2.5)
+    theta = np.deg2rad(transform.rotation.yaw)
+    end = begin + arrow_length * carla.Location(x=np.cos(theta), y=np.sin(theta))
+    world.debug.draw_arrow(begin, end, thickness=thickness, arrow_size=thickness*2, life_time=life_time, color=carla.Color(*color))
 
-def draw_waypoints(world, waypoints, size=0.1, color=carla.Color(0,255,0,255), life_time=50):
+def draw_location(world, location, size=0.1, color=(0,255,0), life_time=50):
+    world.debug.draw_point(location, size=size, color=carla.Color(*color), life_time=life_time)
+
+def draw_waypoints(world, waypoints, size=0.1, color=(0,255,0), life_time=50):
     for waypoint in waypoints:
         draw_location(world, waypoint.transform.location, size, color, life_time)
 

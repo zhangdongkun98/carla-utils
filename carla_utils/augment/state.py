@@ -21,38 +21,24 @@ def getActorState(frame_id, time_stamp, actor):
 
 class State(object):
     def __init__(self, frame_id, time_stamp, **kwargs):
-        # default params
         self.frame_id = frame_id
         self.time_stamp = time_stamp
-        self.x, self.y, self.z = 0.0, 0.0, 0.0
-        self.theta = 0.0
-        self.k = 0.0
-        self.s, self.v, self.a, self.t = 0.0, 0.0, 0.0, 0.0
-        self.velocity, self.acceleration = np.zeros((3,1)), np.zeros((3,1))
 
-        # parameters overload
-        if 'x' in kwargs:
-            self.x = float(kwargs['x'])
-        if 'y' in kwargs:
-            self.y = float(kwargs['y'])
-        if 'z' in kwargs:
-            self.z = float(kwargs['z'])
-        if 'theta' in kwargs:
-            self.theta = basic.pi2pi(float(kwargs['theta']))
-        if 'k' in kwargs:
-            self.k = float(kwargs['k'])
-        if 's' in kwargs:
-            self.s = float(kwargs['s'])
-        if 'v' in kwargs:
-            self.v = float(kwargs['v'])
-        if 'a' in kwargs:
-            self.a = float(kwargs['a'])
-        if 't' in kwargs:
-            self.t = float(kwargs['t'])
-        if 'velocity' in kwargs:
-            self.velocity = kwargs['velocity']
-        if 'acceleration' in kwargs:
-            self.acceleration = kwargs['acceleration']
+        self.x = float(kwargs.get('x', 0))
+        self.y = float(kwargs.get('y', 0))
+        self.z = float(kwargs.get('z', 0))
+
+        self.theta = basic.pi2pi(float(kwargs.get('theta', 0)))
+
+        self.k = float(kwargs.get('k', 0))
+
+        self.s = float(kwargs.get('s', 0))
+        self.v = float(kwargs.get('v', 0))
+        self.a = float(kwargs.get('a', 0))
+        self.t = float(kwargs.get('t', 0))
+
+        self.velocity = kwargs.get('velocity', np.zeros((3,1))).astype(np.float64)
+        self.acceleration = kwargs.get('acceleration', np.zeros((3,1))).astype(np.float64)
         
 
     def __str__(self):
@@ -60,7 +46,7 @@ class State(object):
         return obj
 
 
-    def distance(self, state):
+    def distance_xyz(self, state):
         dx = self.x - state.x
         dy = self.y - state.y
         dz = self.z - state.z

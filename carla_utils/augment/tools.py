@@ -1,6 +1,12 @@
 
 import numpy as np
 
+from .. import basic
+
+
+# ==============================================================================
+# -- vector operation ----------------------------------------------------------
+# ==============================================================================
 
 def vector3DEMul(vec1, vec2):
     '''
@@ -31,3 +37,48 @@ def vectorYawRad(vec):
 
 def vector3DToArray(vec):
     return np.array([vec.x, vec.y, vec.z]).reshape(3,1)
+
+
+
+# ==============================================================================
+# -- calculate error -----------------------------------------------------------
+# ==============================================================================
+
+def error_state(current_state, target_state):
+    xr, yr, thetar = target_state.x, target_state.y, target_state.theta
+    theta_e = basic.pi2pi(current_state.theta - thetar)
+
+    d = (current_state.x - xr, current_state.y - yr)
+    t = (np.cos(thetar), np.sin(thetar))
+
+    longitudinal_e, lateral_e = _cal_long_lat_error(d, t)
+    return longitudinal_e, lateral_e, theta_e
+
+def error_transform(current_transform, target_transform):
+    xr, yr, thetar = target_transform.location.x, target_transform.location.y, np.deg2rad(target_transform.rotation.yaw)
+    theta_e = basic.pi2pi(np.deg2rad(current_transform.rotation.yaw) - thetar)
+
+    d = (current_transform.location.x - xr, current_transform.location.y - yr)
+    t = (np.cos(thetar), np.sin(thetar))
+
+    longitudinal_e, lateral_e = _cal_long_lat_error(d, t)
+    return longitudinal_e, lateral_e, theta_e
+
+def _cal_long_lat_error(d, t):
+    '''
+        Args:
+            d, t: array-like
+    '''
+    dx, dy = d[0], d[1]
+    tx, ty = t[0], t[1]
+    longitudinal_e = dx*tx + dy*ty
+    lateral_e = dx*ty - dy*tx
+    return longitudinal_e, lateral_e
+
+
+def distance_waypoint(waypoint1, waypoint2):
+    '''
+        Calculate distance between waypoin1 and waypoint2.
+    '''
+    d = waypoint1.transform.location.distance(waypoint2.transform.location)
+    return d

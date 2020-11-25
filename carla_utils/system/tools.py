@@ -78,6 +78,12 @@ class YamlConfig(object):
         except:
             e = 'yaml file \'{}\' has not attribute \'{}\''.format(self._file_path, name)
             raise AttributeError(e)
+    
+    def get(self, key, default):
+        result = default
+        if hasattr(self, key):
+            result = getattr(self, key)
+        return result
 
 
 class Singleton(object):
