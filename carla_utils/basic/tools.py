@@ -37,6 +37,9 @@ def int2onehot(index : int, length):
     else: raise NotImplementedError
     
 def onehot2int(one_hot):
+    if isinstance(one_hot, torch.Tensor):
+        return torch.argmax(one_hot, dim=-1)
+    else: raise NotImplementedError
     return np.argmax(one_hot)
 
 
