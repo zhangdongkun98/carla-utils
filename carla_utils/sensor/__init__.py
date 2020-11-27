@@ -1,5 +1,5 @@
 
-from .pesudo_sensor import Sensor
+from .pesudo_sensor import PesudoSensor
 
 from .sensor_callback import CarlaSensorCallback
 from .sensor_master import CarlaSensorMaster, CarlaSensorListMaster, createSensoListMaster

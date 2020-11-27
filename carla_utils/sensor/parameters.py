@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from .coordinate_transformation import CoordinateTransformation, rotationMatrix3D
+from ..basic.coordinate_transformation import RotationMatrix, HomogeneousMatrixInverse
 
 
 
@@ -39,7 +39,7 @@ class ExtrinsicParams(object):
             sensor: carla.Sensor
         '''
 
-        # camera coordinate in world coordinate
+        # camera coordinate in imu coordinate
         transform = sensor.get_transform()
 
         # [m]
@@ -52,9 +52,9 @@ class ExtrinsicParams(object):
         pitch = np.deg2rad(transform.rotation.pitch)
         yaw = np.deg2rad(transform.rotation.yaw)
 
-        # (coordinate) t: camera in world, R: camera to world
+        # (coordinate) t: camera in imu, R: camera to imu
         self.t = np.array([[x, y, z]]).T
-        self.R = rotationMatrix3D(roll, pitch, yaw)
+        self.R = RotationMatrix.rpy(roll, pitch, yaw)
 
 
 class CameraParams(object):
@@ -62,12 +62,14 @@ class CameraParams(object):
         '''
         Args:
             sensor: carla.Sensor
+            intrinsic_params: IntrinsicParams
+            extrinsic_params: ExtrinsicParams
         '''
         intrinsic_params = IntrinsicParams(sensor)
         extrinsic_params = ExtrinsicParams(sensor)
         self.K = intrinsic_params.K
         self.t = extrinsic_params.t
         self.R = extrinsic_params.R
-        
 
-
+        self.K_augment = np.hstack((self.K, np.zeros((3,1))))
+        self.T_img_imu = HomogeneousMatrixInverse(self.R, self.t)

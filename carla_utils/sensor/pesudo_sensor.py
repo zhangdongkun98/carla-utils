@@ -1,6 +1,6 @@
 
 
-class Sensor(object):
+class PesudoSensor(object):
     def __init__(self, transform, config):
         self.type_id = 'sensor.camera.rgb'
         self.transform = transform
@@ -9,3 +9,6 @@ class Sensor(object):
         self.attributes['image_size_x'] = str( config['img_length'] )
         self.attributes['image_size_y'] = str( config['img_width'] )
         self.attributes['fov'] = str( config['fov'] )
+    
+    def get_transform(self):
+        return self.transform
