@@ -58,12 +58,13 @@ class ExtrinsicParams(object):
 
 
 class CameraParams(object):
-    def __init__(self, intrinsic_params, extrinsic_params):
+    def __init__(self, sensor):
         '''
         Args:
-            intrinsic_params: IntrinsicParams
-            extrinsic_params: ExtrinsicParams
+            sensor: carla.Sensor
         '''
+        intrinsic_params = IntrinsicParams(sensor)
+        extrinsic_params = ExtrinsicParams(sensor)
         self.K = intrinsic_params.K
         self.t = extrinsic_params.t
         self.R = extrinsic_params.R
