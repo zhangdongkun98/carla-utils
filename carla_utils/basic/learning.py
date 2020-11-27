@@ -3,16 +3,28 @@ import os
 from os.path import join
 import time
 
-from tensorboardX import SummaryWriter
 
-
-def create_dir(description, model_name):
-    dataset_name = model_name + '/' + str(int(time.time())) + ' -- ' + description
+def create_dir(config, model_name):
+    '''
+        create dir and save config
+        Args:
+            config: need to contain:
+                config.description
+    '''
+    dataset_name = model_name + '/' + str(int(time.time())) + '----' + config.description
     print('create dir: ', dataset_name)
     log_path = join('results', dataset_name, 'log')
     save_model_path = join('results', dataset_name, 'saved_models')
     output_path = join('results', dataset_name, 'output')
     os.makedirs(save_model_path, exist_ok=True)
     os.makedirs(output_path, exist_ok=True)
-    logger = SummaryWriter(log_dir=log_path)
-    return logger
+    cmd = 'cp ' + config.path + ' ' + join('results', dataset_name)
+    os.system(cmd)
+    return PathPack(log_path, save_model_path, output_path)
+
+
+class PathPack(object):
+    def __init__(self, log_path, save_model_path, output_path):
+        self.log_path = log_path
+        self.save_model_path = save_model_path
+        self.output_path = output_path

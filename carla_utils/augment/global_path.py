@@ -44,7 +44,7 @@ class GlobalPath(object):
         return reference_route
     
 
-    def next_waypoint(self, town_map, current_transform, distance):
+    def next_waypoint(self, current_transform, distance):
         '''
             TODO test on more scenes besides single lane, error is less than 10cm when sampling_resolution is 20cm
             Args:

@@ -61,7 +61,9 @@ def parse_yaml_file_unsafe(file_path):
     data = None
     with open(file_path) as f:
         data = yaml.load(f, Loader=yaml.FullLoader)
-    return YamlConfig(data, file_path)
+    config = YamlConfig(data, file_path)
+    config.set_path(os.path.abspath(file_path))
+    return config
 
 class YamlConfig(object):
     def __init__(self, args_dict, file_path):
@@ -84,6 +86,9 @@ class YamlConfig(object):
         if hasattr(self, key):
             result = getattr(self, key)
         return result
+    
+    def set_path(self, path):
+        self.path = path
 
 
 class Singleton(object):
