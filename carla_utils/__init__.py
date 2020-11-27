@@ -6,7 +6,7 @@ from .augment import *
 
 from .world_map import *
 
-from .sensor import createSensoListMaster, CarlaSensorMaster
+from .sensor import createSensoListMaster, CarlaSensorMaster, CameraParams, PesudoSensor
 
 from . import sensor
 
