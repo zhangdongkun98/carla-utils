@@ -1,7 +1,8 @@
 
 import numpy as np
 
-from ..basic.coordinate_transformation import RotationMatrix, HomogeneousMatrixInverse
+from ..basic import np_dot
+from ..basic.coordinate_transformation import RotationMatrix, HomogeneousMatrixInverse, RotationToHomogeneousMatrix, Reverse
 
 
 
@@ -59,6 +60,8 @@ class ExtrinsicParams(object):
 
 
 class CameraParams(object):
+    # I = np_dot(Reverse.x(), Reverse.y(), RotationMatrix.ypr(np.pi/2, 0, -np.pi/2))
+    I = np_dot(Reverse.x(), RotationMatrix.ypr(np.pi/2, 0, -np.pi/2))
     def __init__(self, sensor):
         '''
         https://github.com/carla-simulator/carla/issues/553
@@ -74,4 +77,5 @@ class CameraParams(object):
         self.R = extrinsic_params.R
 
         self.K_augment = np.hstack((self.K, np.zeros((3,1))))
-        self.T_img_imu = HomogeneousMatrixInverse(self.R, self.t)
+        self.T_img_imu = np_dot(RotationToHomogeneousMatrix(CameraParams.I), HomogeneousMatrixInverse(self.R, self.t))
+        

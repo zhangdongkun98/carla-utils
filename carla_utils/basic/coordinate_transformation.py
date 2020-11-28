@@ -123,3 +123,9 @@ class Reverse(object):
     @staticmethod
     def z():
         return np.diag([1,1,-1])
+
+
+def RotationToHomogeneousMatrix(R):
+    HM = np.identity(4)
+    HM[:3,:3] = R
+    return HM
