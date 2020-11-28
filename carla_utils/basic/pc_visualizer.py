@@ -23,7 +23,7 @@ class PointCloud3DVisualizer(object):
             self.pcd.points = open3d.utility.Vector3dVector(pointcloud[:3].transpose().astype(np.float64))
             self.pcd.colors = open3d.utility.Vector3dVector(np.tile(pointcloud[3:].transpose(), (1, 3)).astype(np.float64))
             # Rotate pointcloud to align displayed coordinate frame colouring
-            self.pcd.transform(HomogeneousMatrix([0, 0, 0, np.pi, 0, -np.pi / 2]))
+            self.pcd.transform(HomogeneousMatrix.xyzrpy([0, 0, 0, np.pi, 0, -np.pi / 2]))
             self.vis.add_geometry(self.pcd)
             render_option = self.vis.get_render_option()
             render_option.background_color = np.array([0.1529, 0.1569, 0.1333], np.float32)
@@ -32,7 +32,7 @@ class PointCloud3DVisualizer(object):
             self.vis.add_geometry(coordinate_frame)
             view_control = self.vis.get_view_control()
             params = view_control.convert_to_pinhole_camera_parameters()
-            params.extrinsic = HomogeneousMatrix(self.view_pose)
+            params.extrinsic = HomogeneousMatrix.xyzrpy(self.view_pose)
             view_control.convert_from_pinhole_camera_parameters(params)
 
         self.pcd.points = open3d.utility.Vector3dVector(pointcloud[:3].transpose().astype(np.float64))

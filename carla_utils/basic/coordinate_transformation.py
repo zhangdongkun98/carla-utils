@@ -3,6 +3,10 @@
     Introduction to Robotics
         coordinate A (source), B (target)
         all variable: represent B in A
+    
+    In this file:
+        class name: target
+        method name: source
 '''
 
 import numpy as np
@@ -59,30 +63,36 @@ def RotationMatrix2D(theta):
     return R
 
 
-def HomogeneousMatrix(*args):
-    if len(args) == 1:
-        xyzrpy = args[0]
-        if len(xyzrpy) != 6:
-            raise ValueError("Must supply 6 values to build transform")
-        R = RotationMatrix.rpy(xyzrpy[3], xyzrpy[4], xyzrpy[5])
-        t = np.array(xyzrpy[0:3]).reshape(3,1)
-    elif len(args) == 2:
-        R, t = args[0], args[1]
-    return np.vstack((np.hstack((R, t)), np.array([0,0,0,1])))
 
-def HomogeneousMatrixInverse(*args):
-    if len(args) == 1:
-        xyzrpy = args[0]
+class HomogeneousMatrix(object):
+    @staticmethod
+    def rotation_translation(R, t):
+        '''Rotation Matrix R and translation vector t'''
+        return np.vstack((np.hstack((R, t)), np.array([0,0,0,1])))
+
+    @staticmethod
+    def xyzrpy(xyzrpy):
         if len(xyzrpy) != 6:
             raise ValueError("Must supply 6 values to build transform")
         R = RotationMatrix.rpy(xyzrpy[3], xyzrpy[4], xyzrpy[5])
         t = np.array(xyzrpy[0:3]).reshape(3,1)
-    elif len(args) == 2:
-        R, t = args[0], args[1]
-    return np.vstack((np.hstack((R.T, -np.dot(R.T, t))), np.array([0,0,0,1])))
+        return HomogeneousMatrix.rotation_translation(R, t)
+    
+    @staticmethod
+    def rotation(R):
+        return HomogeneousMatrix.rotation_translation(R, np.zeros((3,1)))
+
+
+class HomogeneousMatrixInverse(object):
+    @staticmethod
+    def rotation_translation(R, t):
+        '''Rotation Matrix R and translation vector t'''
+        return np.vstack((np.hstack((R.T, -np.dot(R.T, t))), np.array([0,0,0,1])))
+
 
 def HomogeneousMatrix2D(R, t):
     return np.vstack((np.hstack((R, t)), np.array([0,0,1])))
+
 
 
 class RotationMatrixTranslationVector(object):
@@ -107,7 +117,7 @@ class Euler(object):
         if (R - R_ref).sum() < Euler.MATRIX_MATCH_TOLERANCE:
             return roll, pitch_poss[0], yaw
         else:
-            R_ref = euler_to_so3((roll, pitch_poss[1], yaw))
+            R_ref = euler_to_so3((roll, pitch_poss[1], yaw))   # !warning TODO
             if (R - R_ref).sum() > Euler.MATRIX_MATCH_TOLERANCE:
                 raise ValueError("Could not find valid pitch angle")
             return roll, pitch_poss[1], yaw
@@ -123,9 +133,3 @@ class Reverse(object):
     @staticmethod
     def z():
         return np.diag([1,1,-1])
-
-
-def RotationToHomogeneousMatrix(R):
-    HM = np.identity(4)
-    HM[:3,:3] = R
-    return HM

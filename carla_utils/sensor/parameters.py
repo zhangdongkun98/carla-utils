@@ -2,7 +2,7 @@
 import numpy as np
 
 from ..basic import np_dot
-from ..basic.coordinate_transformation import RotationMatrix, HomogeneousMatrixInverse, RotationToHomogeneousMatrix, Reverse
+from ..basic.coordinate_transformation import RotationMatrix, HomogeneousMatrix, HomogeneousMatrixInverse, Reverse
 
 
 
@@ -77,5 +77,5 @@ class CameraParams(object):
         self.R = extrinsic_params.R
 
         self.K_augment = np.hstack((self.K, np.zeros((3,1))))
-        self.T_img_imu = np_dot(RotationToHomogeneousMatrix(CameraParams.I), HomogeneousMatrixInverse(self.R, self.t))
+        self.T_img_imu = np_dot(HomogeneousMatrix.rotation(CameraParams.I), HomogeneousMatrixInverse.rotation_translation(self.R, self.t))
         
