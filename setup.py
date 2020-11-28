@@ -17,7 +17,7 @@ setup(
         'PyYAML',
         'python-intervals',
         'opencv-python',
-        'open3d-python==0.5.0.0',
+        'open3d-python==0.7.0.0',
         'tensorboardX',
     ],
 

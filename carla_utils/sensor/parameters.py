@@ -15,6 +15,7 @@ def intrinsicMatrix(fx, fy, u0, v0):
 class IntrinsicParams(object):
     def __init__(self, sensor):
         '''
+        https://github.com/carla-simulator/carla/issues/56
         Args:
             sensor: carla.Sensor
         '''
@@ -60,6 +61,7 @@ class ExtrinsicParams(object):
 class CameraParams(object):
     def __init__(self, sensor):
         '''
+        https://github.com/carla-simulator/carla/issues/553
         Args:
             sensor: carla.Sensor
             intrinsic_params: IntrinsicParams
