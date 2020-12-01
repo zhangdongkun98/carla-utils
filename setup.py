@@ -19,6 +19,8 @@ setup(
         'opencv-python',
         'open3d-python==0.7.0.0',
         'tensorboardX',
+        'psutil',
+        'pynvml',
     ],
 
     include_package_data=True
