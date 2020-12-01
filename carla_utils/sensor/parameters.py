@@ -60,8 +60,8 @@ class ExtrinsicParams(object):
 
 
 class CameraParams(object):
-    # I = np_dot(Reverse.x(), Reverse.y(), RotationMatrix.ypr(np.pi/2, 0, -np.pi/2))
-    I = np_dot(Reverse.x(), RotationMatrix.ypr(np.pi/2, 0, -np.pi/2))
+    I = np_dot(Reverse.x(), Reverse.y(), RotationMatrix.ypr(np.pi/2, 0, -np.pi/2))
+    # I = np_dot(Reverse.x(), RotationMatrix.ypr(np.pi/2, 0, -np.pi/2))
     def __init__(self, sensor):
         '''
         https://github.com/carla-simulator/carla/issues/553
