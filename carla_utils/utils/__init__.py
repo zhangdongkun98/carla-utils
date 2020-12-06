@@ -1,3 +1,7 @@
 
 from .agents_route_planner import AgentsRoutePlanner
-# from .pygame_interaction import PyGameInteraction
+from .pygame_interaction import PyGameInteraction
+
+from .controller import Controller
+
+from .agent_base import BaseAgent

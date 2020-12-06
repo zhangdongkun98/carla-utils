@@ -82,3 +82,15 @@ def distance_waypoint(waypoint1, waypoint2):
     '''
     d = waypoint1.transform.location.distance(waypoint2.transform.location)
     return d
+
+
+class ArcLength(object):
+    @staticmethod
+    def states(current_state, target_state):
+        d = current_state.distance_xy(target_state)
+        theta = basic.pi2pi(current_state.theta - target_state.delta_theta(current_state))
+        if abs(theta) < 0.001:
+            return d, 0.0
+        l = d * abs(theta / np.sin(theta))
+        curvature = -2*np.sin(theta) / d
+        return l, curvature

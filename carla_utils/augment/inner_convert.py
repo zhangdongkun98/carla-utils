@@ -1,6 +1,6 @@
+import carla
 
 import numpy as np
-import carla
 
 from .state import State
 from .waypoint import Waypoint
@@ -29,6 +29,17 @@ class InnerConvert(object):
     
     @staticmethod
     def CarlaTransformToState(frame_id, time_stamp, transform, **kwargs):
+        """
+        
+        
+        Args:
+            transform: carla.Transform, need to be valid or real
+            kwargs: contains except x, y, z, theta
+        
+        Returns:
+            carla_utils.augment.State
+        """
+        
         location, rotation = transform.location, transform.rotation
         x, y, z = location.x, location.y, location.z
         theta = np.deg2rad(rotation.yaw)

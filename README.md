@@ -33,6 +33,6 @@ pip install -e .
 	
 	- sensor
 	- world_map
-	- utils   # contains class easy to use 
+	- utils   # contains class easy to use
 	
 	- benchmark ?

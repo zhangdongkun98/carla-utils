@@ -470,21 +470,23 @@ class PyGameInteraction(object):
             config: need to contain:
                 config.width
                 config.height
+                config.use_kb_control
         '''
+        width, height = config.get('width', 1000), config.get('height', 600)
+        self.use_kb_control = config.get('use_kb_control', True)
+        
         pygame.init()
         pygame.font.init()
-        self.display = pygame.display.set_mode(
-                (config.width, config.height),
-                pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.display = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         self.client_clock = client_clock
         self.client = client
-        self.hud = HUD(client, client.get_world(), vehicle, sensor_manager, (config.width, config.height))
+        self.hud = HUD(client, client.get_world(), vehicle, sensor_manager, (width, height))
         self.kb_control = KeyboardControl(self.hud, self.display)
 
 
     def tick(self):
-        self.kb_control.parse_events(self.display, self.client_clock)
+        if self.use_kb_control: self.kb_control.parse_events(self.display, self.client_clock)
         self.hud.tick(self.client_clock)
         self.hud.render(self.display)
         pygame.display.flip()

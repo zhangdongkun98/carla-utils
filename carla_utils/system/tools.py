@@ -87,6 +87,21 @@ class YamlConfig(object):
             result = getattr(self, key)
         return result
     
+    def update(self, config):
+        """
+        
+        Args:
+            config: YamlConfig or argparse
+        
+        Returns:
+            None
+        """
+
+        for attribute in dir(config):
+            if not attribute.startswith('_'):
+                setattr(self, attribute, getattr(config, attribute))
+        return
+    
     def set_path(self, path):
         self.path = path
 

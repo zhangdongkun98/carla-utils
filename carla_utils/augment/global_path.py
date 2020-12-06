@@ -1,3 +1,4 @@
+import carla
 
 import time
 import numpy as np
@@ -5,13 +6,23 @@ import copy
 
 from agents.navigation.local_planner import RoadOption
 from .tools import error_transform, distance_waypoint
+from .. import basic
 
 lane_change_set = set([RoadOption.CHANGELANELEFT, RoadOption.CHANGELANERIGHT])
 lane_keeping_set = set([RoadOption.VOID, RoadOption.LEFT, RoadOption.RIGHT, RoadOption.STRAIGHT, RoadOption.LANEFOLLOW])
 
 
+def calc_curvature_with_yaw_diff(x, y, yaw):
+    dists = np.array([np.hypot(dx, dy) for dx, dy in zip(np.diff(x), np.diff(y))])
+    d_yaw = basic.pi2pi(np.diff(yaw))
+    curvatures = d_yaw / dists
+    curvatures = np.concatenate([curvatures, [0.0]])
+    return curvatures, dists
+
+
 class GlobalPath(object):
-    def __init__(self, frame_id, time_stamp, route, sampling_resolution):
+    def __init__(self, frame_id, time_stamp, route, sampling_resolution=None):
+        ###!warning TODO : delete sampling_resolution
         self.frame_id = frame_id
         self.time_stamp = time_stamp
 
@@ -19,17 +30,44 @@ class GlobalPath(object):
         self.carla_waypoints = list(np.array(route)[:,0])
         self.options = list(np.array(route)[:,1])
         self._destination = self.carla_waypoints[-1].transform
-        self.sampling_resolution = sampling_resolution
+        # self.sampling_resolution = sampling_resolution
 
-        self.max_coverage = 0
-        assert sampling_resolution <= 0.2
+        x = [i.transform.location.x for i in self.carla_waypoints]
+        y = [i.transform.location.y for i in self.carla_waypoints]
+        theta = [np.deg2rad(i.transform.rotation.yaw) for i in self.carla_waypoints]
+        self.curvatures, self.distances = calc_curvature_with_yaw_diff(x, y, theta)
+        self.sampling_resolution = np.average(self.distances)
 
+        self._max_coverage = 0
+        # assert sampling_resolution <= 0.2
+
+
+    def __len__(self):
+        return len(self.route)
 
     def reset(self):
         '''
-            Reset self.max_coverage to 0, since self.max_coverage aims to eliminate back-and-forth.
+            Reset self._max_coverage to 0, since self._max_coverage aims to eliminate back-and-forth.
         '''
-        self.max_coverage = 0
+        self._max_coverage = 0
+    
+    @property
+    def destination(self):
+        return self._destination
+    @property
+    def max_coverage(self):
+        return self._max_coverage
+    
+    def reached(self, preview_distance=0):
+        preview_distance = max(0, preview_distance)
+        preview_index = max(preview_distance // self.sampling_resolution + 1, 0)
+        return self._max_coverage >= len(self)-1 - preview_index
+
+    
+    def draw(self, world, size=0.1, color=(0,255,0), life_time=10):
+        for waypoint in self.carla_waypoints:
+            world.debug.draw_point(waypoint.transform.location, size=size, color=carla.Color(*color), life_time=life_time)
+        return
 
 
     def truncate(self, current_state, max_step):
@@ -52,13 +90,13 @@ class GlobalPath(object):
         '''
         self._step_coverage(current_transform)
 
-        longitudinal_e, _, _ = error_transform(current_transform, self.carla_waypoints[self.max_coverage].transform)
-        # assert longitudinal_e >= 0 or self.max_coverage == 0
+        longitudinal_e, _, _ = error_transform(current_transform, self.carla_waypoints[self._max_coverage].transform)
+        # assert longitudinal_e >= 0 or self._max_coverage == 0
         distance += longitudinal_e
 
         length = 0.0
-        index = self.max_coverage
-        for index in range(self.max_coverage, len(self)-1):
+        index = self._max_coverage
+        for index in range(self._max_coverage, len(self)-1):
             length += distance_waypoint(self.carla_waypoints[index], self.carla_waypoints[index+1])
             if length >= distance:
                 break
@@ -79,19 +117,23 @@ class GlobalPath(object):
                     result = next_waypoint
         return result
     
+    def target_waypoint(self, current_transform):
+        self._step_coverage(current_transform)
+        index = min(len(self)-1, self._max_coverage+1)
+        return self.carla_waypoints[index], self.curvatures[index]
+    
 
     def _step_coverage(self, current_transform):
         '''
             Args:
                 current_transform: carla.Transform
         '''
-        index = self.max_coverage
-        for index in range(self.max_coverage, len(self)-2):
-            longitudinal_e, _, _ = error_transform(current_transform, self.carla_waypoints[index+1].transform)
+        index = self._max_coverage
+        for index in range(self._max_coverage, len(self)):
+            longitudinal_e, _, _ = error_transform(current_transform, self.carla_waypoints[min(len(self)-1, index+1)].transform)
             if longitudinal_e < 0:
                 break
-        self.max_coverage = index
-
+        self._max_coverage = index
 
 
     def _calc_nearest_index(self, current_state, reference_waypoints):
@@ -107,11 +149,4 @@ class GlobalPath(object):
                 ind = index
         return ind, np.sqrt(mind)
 
-
-    def __len__(self):
-        return len(self.route)
-
-    @property
-    def destination(self):
-        return self._destination
     
