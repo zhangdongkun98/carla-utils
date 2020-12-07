@@ -15,4 +15,4 @@ from . import sensor
 
 '''utils'''
 from .utils import AgentsRoutePlanner, PyGameInteraction, Controller
-from .utils import BaseAgent
+from .utils import BaseAgent, NaiveAgent

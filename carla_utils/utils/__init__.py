@@ -5,3 +5,4 @@ from .pygame_interaction import PyGameInteraction
 from .controller import Controller
 
 from .agent_base import BaseAgent
+from .agent_naive import NaiveAgent

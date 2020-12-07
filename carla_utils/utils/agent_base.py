@@ -56,7 +56,7 @@ class BaseAgent(object):
         if self.debug: self.global_path.draw(self.world, life_time=15)
 
     def run_step(self):
-        target_v = self.max_velocity
+        target_v = self._get_target_v()
         for _ in range(self.skip_num):
             tick1 = time.time()
             control = self.get_control(target_v)
@@ -65,6 +65,9 @@ class BaseAgent(object):
             sleep_time = 1/self.control_frequency-tick2+tick1
             time.sleep( max(0, sleep_time) )
         return
+    
+    def _get_target_v(self):
+        return self.max_velocity
 
     def get_control(self, target_v):
         if self.global_path.reached(5.0):
