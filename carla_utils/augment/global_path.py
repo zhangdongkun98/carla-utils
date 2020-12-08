@@ -21,8 +21,7 @@ def calc_curvature_with_yaw_diff(x, y, yaw):
 
 
 class GlobalPath(object):
-    def __init__(self, frame_id, time_stamp, route, sampling_resolution=None):
-        ###!warning TODO : delete sampling_resolution
+    def __init__(self, frame_id, time_stamp, route):
         self.frame_id = frame_id
         self.time_stamp = time_stamp
 
@@ -30,7 +29,6 @@ class GlobalPath(object):
         self.carla_waypoints = list(np.array(route)[:,0])
         self.options = list(np.array(route)[:,1])
         self._destination = self.carla_waypoints[-1].transform
-        # self.sampling_resolution = sampling_resolution
 
         x = [i.transform.location.x for i in self.carla_waypoints]
         y = [i.transform.location.y for i in self.carla_waypoints]
@@ -39,7 +37,7 @@ class GlobalPath(object):
         self.sampling_resolution = np.average(self.distances)
 
         self._max_coverage = 0
-        # assert sampling_resolution <= 0.2
+        # assert self.sampling_resolution <= 0.2
 
 
     def __len__(self):
@@ -121,6 +119,10 @@ class GlobalPath(object):
         self._step_coverage(current_transform)
         index = min(len(self)-1, self._max_coverage+1)
         return self.carla_waypoints[index], self.curvatures[index]
+    
+    def remaining_waypoints(self, current_transform):
+        self._step_coverage(current_transform)
+        return self.carla_waypoints[self._max_coverage:], sum(self.distances[self._max_coverage:])
     
 
     def _step_coverage(self, current_transform):

@@ -14,5 +14,6 @@ from . import sensor
 
 
 '''utils'''
-from .utils import AgentsRoutePlanner, PyGameInteraction, Controller
-from .utils import BaseAgent, NaiveAgent
+from .utils import AgentsRoutePlanner, PyGameInteraction, NPC
+from .utils import Controller
+from .utils import BaseAgent, NaiveAgent, IDMAgent

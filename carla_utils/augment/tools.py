@@ -55,6 +55,16 @@ def error_state(current_state, target_state):
     return longitudinal_e, lateral_e, theta_e
 
 def error_transform(current_transform, target_transform):
+    """
+        !todo
+    
+    Args:
+    ---------
+    
+    Returns:
+    -------
+    """
+    
     xr, yr, thetar = target_transform.location.x, target_transform.location.y, np.deg2rad(target_transform.rotation.yaw)
     theta_e = basic.pi2pi(np.deg2rad(current_transform.rotation.yaw) - thetar)
 

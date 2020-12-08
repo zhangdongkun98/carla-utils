@@ -198,4 +198,5 @@ class CarlaSensorMaster(object):
 
 
     def destroy(self):
+        self.sensor.stop()
         self.sensor.destroy()

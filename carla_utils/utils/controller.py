@@ -14,7 +14,7 @@ class Controller(object):
         max_b = config.get('max_brake', 1.0)
         max_steer = config.get('max_steer', 1.0)
 
-        Kp, Ki, Kd = 1.00, 0.00, 0.05
+        Kp, Ki, Kd = 1.00, 0.01, 0.05
         self.v_param = (Kp, Ki, Kd)
         k_theta, k_e = 0.2, 0.05
         self.w_param = (k_theta, k_e)

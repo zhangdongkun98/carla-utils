@@ -1,5 +1,7 @@
 import carla
 
+import time
+
 from .agent_base import BaseAgent
 from agents.navigation.agent import Agent, AgentState
 
@@ -22,7 +24,7 @@ class NaiveAgent(BaseAgent, Agent):
         if vehicle_state:
             self._state = AgentState.BLOCKED_BY_VEHICLE
             hazard_detected = True
-        
+
         light_state, traffic_light = self._is_light_red(lights_list)
         if light_state:
             self._state = AgentState.BLOCKED_RED_LIGHT

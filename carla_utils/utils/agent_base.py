@@ -76,7 +76,7 @@ class BaseAgent(object):
 
         current_transform = self.vehicle.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
-        if self.debug: draw_arrow(self.world, target_waypoint.transform)
+        if self.debug: draw_arrow(self.world, target_waypoint.transform, life_time=0.1)
 
         current_v = vector3DNorm(self.vehicle.get_velocity())
         current_state = InnerConvert.CarlaTransformToState(None, None, current_transform, v=current_v)

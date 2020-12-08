@@ -138,3 +138,44 @@ def get_reference_route_wrt_waypoint(waypoint, sampling_resolution, sampling_num
         next_waypoint = random.choice(next_waypoint.next(sampling_resolution))
         reference_route.append( (next_waypoint, RoadOption.LANEFOLLOW) )
     return reference_route
+
+
+
+
+from ..augment import error_transform
+
+def get_leading_vehicle_unsafe(vehicle, vehicles, reference_waypoints, max_distance):
+    """
+        Get leading vehicle wrt reference_waypoints or global_path.
+        !warning: distances between reference_waypoints cannot exceed any vehicle length.
+    
+    Args:
+        reference_waypoints: list of carla.Waypoint
+    
+    Returns:
+        
+    """
+    
+    current_location = vehicle.get_location()
+    vehicle_id = vehicle.id
+    vehicle_half_height = vehicle.bounding_box.extent.z
+    func = lambda loc: loc.distance(current_location)
+    obstacles = [(func(o.get_location()), o) for o in vehicles if o.id != vehicle_id and func(o.get_location()) <= 1.001*max_distance]
+    sorted_obstacles = sorted(obstacles, key=lambda x:x[0])
+
+    leading_vehicle, leading_distance = None, 0.0
+    for i, waypoint in enumerate(reference_waypoints):
+        if i > 0: leading_distance += waypoint.transform.location.distance(reference_waypoints[i-1].transform.location)
+        if leading_distance > 1.001*max_distance: break
+        location = waypoint.transform.location
+        location.z += vehicle_half_height
+        for _, obstacle in sorted_obstacles:
+            obstacle_transform = obstacle.get_transform()
+            if obstacle.bounding_box.contains(location, obstacle_transform):
+                leading_vehicle = obstacle
+                longitudinal_e, _, _ = error_transform(obstacle_transform, waypoint.transform)
+                leading_distance += longitudinal_e
+                break
+        if leading_vehicle is not None: break
+    return leading_vehicle, leading_distance
+
