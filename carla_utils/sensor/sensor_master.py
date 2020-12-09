@@ -43,7 +43,7 @@ class CreateSensor(object):
         camera_bp.set_attribute('image_size_x', str(config['image_size_x']))
         camera_bp.set_attribute('image_size_y', str(config['image_size_y']))
         camera_bp.set_attribute('fov', str(config['fov']))
-        camera_bp.set_attribute('sensor_tick', str(1./config['fps']))
+        camera_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
         camera = world.spawn_actor(camera_bp, config['transform'], attach_to=vehicle)
         return camera
 
@@ -65,7 +65,7 @@ class CreateSensor(object):
     def add_imu(world, blueprint, vehicle, config):
         imu_bp = blueprint.find('sensor.other.imu')
         imu_bp.set_attribute('role_name', str(config['role_name']))
-        imu_bp.set_attribute('sensor_tick', str(1./config['fps']))
+        imu_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
         imu = world.spawn_actor(imu_bp, config['transform'], attach_to=vehicle)
         return imu
 
@@ -73,7 +73,7 @@ class CreateSensor(object):
     def add_gnss(world, blueprint, vehicle, config):
         gnss_bp = blueprint.find('sensor.other.gnss')
         gnss_bp.set_attribute('role_name', str(config['role_name']))
-        gnss_bp.set_attribute('sensor_tick', str(1./config['fps']))
+        gnss_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
         gnss = world.spawn_actor(gnss_bp, config['transform'], attach_to=vehicle)
         return gnss
 
@@ -179,8 +179,8 @@ class CarlaSensorMaster(object):
 
         if hasattr(sensor, 'listen'):
             self.sensor.listen(self.callback)
-            
-        pass
+
+        return
 
 
     def get_transform(self):

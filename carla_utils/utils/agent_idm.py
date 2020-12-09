@@ -65,8 +65,8 @@ class IDMAgent(BaseAgent, Agent):
         distance_b2b = distance_c2c - length_two_half - 0.3   # bumper-to-bumper distance
         distance_b2b_valid = max(0.001, distance_b2b)
 
-        leading_v = vector3DNorm(leading_vehicle.get_velocity())
-        current_v = vector3DNorm(self.vehicle.get_velocity())
+        leading_v = vector3DNorm(leading_vehicle.get_velocity())    ## !warning
+        current_v = self.get_current_v()
         delta_v = current_v - leading_v
         
         s = current_v*(self.time_gap+delta_v/(2*np.sqrt(self.acceleration*self.comfortable_deceleration)))

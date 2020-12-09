@@ -18,5 +18,6 @@ from .tools import mkdir
 from .multiprocessing import NCQPipe, SharedVariable
 
 from .resource_manager import ResourceManager
+from .clock import Clock
 
 from pprint import pprint

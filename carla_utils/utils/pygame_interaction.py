@@ -278,10 +278,12 @@ class KeyboardControl(object):
 
 
 class HUD(object):
-    def __init__(self, client, world, vehicle, sensor_manager, dim):
+    def __init__(self, client, world, vehicle, sensor_manager, display):
         self.client, self.world, self.town_map = client, world, world.get_map()
         self.vehicle, self.sensor_manager = vehicle, sensor_manager
+        self.display = display
 
+        dim = (self.display.get_width(), self.display.get_height())
         self.dim = dim
         self.origin_dim = dim
         width, height = dim[0], dim[1]
@@ -295,6 +297,7 @@ class HUD(object):
         self._font_mono = pygame.font.Font(mono, 14)
         self._notifications = FadingText(font, (width, 40), (0, height - 40))
 
+        self.settings = world.get_settings()
         self.world.on_tick(self.on_world_tick)
         self.server_fps = 0
         self.frame = 0
@@ -317,6 +320,7 @@ class HUD(object):
     def tick(self, clock):
         self._notifications.tick(clock)
         carla_image = self.sensor_manager.get_camera().get_raw_data()
+        if carla_image is None: print('[pygame_interaction] tick: warning'); return
         self._surface = make_surface(carla_image)
         if not self._show_info:
             self._info_text = []
@@ -364,6 +368,7 @@ class HUD(object):
                     break
                 vehicle_type = get_actor_display_name(vehicle, truncate=22)
                 self._info_text.append('% 4dm %s' % (d, vehicle_type))
+        self.render(self.display)
         
     def next_weather(self, reverse=False):
         self._weather_index += -1 if reverse else 1
@@ -463,10 +468,9 @@ class FadingText(object):
 
 
 class PyGameInteraction(object):
-    def __init__(self, client_clock, client, vehicle, sensor_manager, config):
+    def __init__(self, client, vehicle, sensor_manager, config):
         '''
             Args:
-            client_clock: pygame.time.Clock
             config: need to contain:
                 config.width
                 config.height
@@ -479,16 +483,16 @@ class PyGameInteraction(object):
         pygame.font.init()
         self.display = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF)
 
-        self.client_clock = client_clock
+        self.clock = pygame.time.Clock()
         self.client = client
-        self.hud = HUD(client, client.get_world(), vehicle, sensor_manager, (width, height))
+        self.hud = HUD(client, client.get_world(), vehicle, sensor_manager, self.display)
         self.kb_control = KeyboardControl(self.hud, self.display)
 
 
     def tick(self):
-        if self.use_kb_control: self.kb_control.parse_events(self.display, self.client_clock)
-        self.hud.tick(self.client_clock)
-        self.hud.render(self.display)
+        self.clock.tick_busy_loop(0)
+        if self.use_kb_control: self.kb_control.parse_events(self.display, self.clock)
+        self.hud.tick(self.clock)
         pygame.display.flip()
 
 

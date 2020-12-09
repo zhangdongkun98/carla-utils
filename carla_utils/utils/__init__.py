@@ -8,3 +8,6 @@ from .controller import Controller
 from .agent_base import BaseAgent
 from .agent_naive import NaiveAgent
 from .agent_idm import IDMAgent
+
+from .agent_base_pseudo import BaseAgentPseudo
+

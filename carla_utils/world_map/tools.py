@@ -5,19 +5,31 @@ import numpy as np
 import random
 import time
 
-def connect_to_server(host, port, timeout=2.0, map_name='None'):
+def connect_to_server(host, port, timeout=2.0, map_name=None, **kwargs):
     client = carla.Client(host, port)
     client.set_timeout(timeout)
     available_map_names = client.get_available_maps()
     world = client.get_world()
     town_map = world.get_map()
 
+    map_name = str(map_name)
     flag1 = town_map.name not in map_name
     flag2 = True in [map_name in available_map_name for available_map_name in available_map_names]
     if flag1 and flag2:
         client.load_world(map_name)
         world = client.get_world()
         town_map = world.get_map()
+
+    weather = kwargs.get('weather', carla.WeatherParameters.ClearNoon)
+    world.set_weather(weather)
+
+    current_settings = world.get_settings()
+    settings = kwargs.get('settings', current_settings)
+    if  settings.synchronous_mode != current_settings.synchronous_mode \
+            or settings.no_rendering_mode != current_settings.no_rendering_mode \
+            or settings.fixed_delta_seconds != current_settings.fixed_delta_seconds:
+        world.apply_settings(settings)
+
     print('connected to server {}:{}'.format(host, port))
     return client, world, town_map
 
@@ -67,7 +79,7 @@ def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer',
     if spawn_point:
         spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.2)
         vehicle.set_transform(spawn_transform)
-    time.sleep(0.1)
+    world.tick()
     print('spawn_point: x={}, y={}'.format(vehicle.get_location().x, vehicle.get_location().y))
     return vehicle
 

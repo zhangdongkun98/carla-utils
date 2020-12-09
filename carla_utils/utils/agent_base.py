@@ -2,9 +2,10 @@ import carla
 
 import time
 
-from ..augment import GlobalPath, InnerConvert, vector3DNorm
 from .controller import Controller
+from ..augment import GlobalPath, InnerConvert, vector3DNorm
 from ..world_map import get_reference_route, draw_arrow
+from ..system import Clock
 
 
 class BaseAgent(object):
@@ -39,6 +40,7 @@ class BaseAgent(object):
         self.distance_range = 100
         self.sampling_resolution = 1
 
+        self.clock = Clock(self.control_frequency)
         self.controller = Controller(config, self.control_frequency)
 
         '''vehicle'''
@@ -55,19 +57,22 @@ class BaseAgent(object):
         self.global_path = GlobalPath(None, None, route)
         if self.debug: self.global_path.draw(self.world, life_time=15)
 
-    def run_step(self):
+    def run_step(self, client):
         target_v = self._get_target_v()
         for _ in range(self.skip_num):
-            tick1 = time.time()
+            self.clock.tick_begin()
             control = self.get_control(target_v)
             self.vehicle.apply_control(control)
-            tick2 = time.time()
-            sleep_time = 1/self.control_frequency-tick2+tick1
-            time.sleep( max(0, sleep_time) )
+            self.clock.tick_end()
         return
     
     def _get_target_v(self):
         return self.max_velocity
+    
+    def get_transform(self):
+        return self.vehicle.get_transform()
+    def get_current_v(self):
+        return vector3DNorm(self.vehicle.get_velocity())
 
     def get_control(self, target_v):
         if self.global_path.reached(5.0):
@@ -78,7 +83,7 @@ class BaseAgent(object):
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
         if self.debug: draw_arrow(self.world, target_waypoint.transform, life_time=0.1)
 
-        current_v = vector3DNorm(self.vehicle.get_velocity())
+        current_v = self.get_current_v()
         current_state = InnerConvert.CarlaTransformToState(None, None, current_transform, v=current_v)
         target_state = InnerConvert.CarlaTransformToState(None, None, target_waypoint.transform, v=target_v, k=curvature)
         control = self.controller.run_step(current_state, target_state)

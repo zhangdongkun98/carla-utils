@@ -17,3 +17,4 @@ from . import sensor
 from .utils import AgentsRoutePlanner, PyGameInteraction, NPC
 from .utils import Controller
 from .utils import BaseAgent, NaiveAgent, IDMAgent
+from .utils import BaseAgentPseudo
