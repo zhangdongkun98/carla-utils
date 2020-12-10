@@ -13,7 +13,6 @@ class NaiveAgent(BaseAgent, Agent):
     
 
     def _get_target_v(self):
-
         hazard_detected = False
 
         actor_list = self.world.get_actors()

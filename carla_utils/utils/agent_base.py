@@ -25,7 +25,7 @@ class BaseAgent(object):
         '''config, remind'''
         self.max_velocity = config.get('max_velocity', 8.34)
         self.max_acceleration = config.get('max_acceleration', 5.0)
-        self.min_acceleration = config.get('min_acceleration', -5.0)
+        self.min_acceleration = config.get('min_acceleration', -10.0)
         self.max_throttle = config.get('max_throttle', 1.0)
         self.max_brake = config.get('max_brake', 1.0)
         self.max_steer = config.get('max_steer', 1.0)

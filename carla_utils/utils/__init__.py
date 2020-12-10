@@ -10,4 +10,4 @@ from .agent_naive import NaiveAgent
 from .agent_idm import IDMAgent
 
 from .agent_base_pseudo import BaseAgentPseudo
-
+from .agent_naive_pseudo import NaiveAgentPseudo
