@@ -11,3 +11,6 @@ from .agent_idm import IDMAgent
 
 from .agent_base_pseudo import BaseAgentPseudo
 from .agent_naive_pseudo import NaiveAgentPseudo
+
+from .agent_list_master import AgentListMaster
+

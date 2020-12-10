@@ -7,12 +7,12 @@ from agents.navigation.agent import Agent, AgentState
 
 
 class NaiveAgent(BaseAgent, Agent):
-    def __init__(self, config, world, town_map, vehicle, global_path=None):
-        BaseAgent.__init__(self, config, world, town_map, vehicle, global_path)
+    def __init__(self, config, client, world, town_map, vehicle, global_path=None):
+        BaseAgent.__init__(self, config, client, world, town_map, vehicle, global_path)
         Agent.__init__(self, vehicle)
     
 
-    def _get_target_v(self):
+    def get_target_v(self):
         hazard_detected = False
 
         actor_list = self.world.get_actors()

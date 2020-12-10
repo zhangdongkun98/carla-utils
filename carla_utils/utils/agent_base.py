@@ -9,7 +9,7 @@ from ..system import Clock
 
 
 class BaseAgent(object):
-    def __init__(self, config, world, town_map, vehicle, global_path=None):
+    def __init__(self, config, client, world, town_map, vehicle, global_path=None):
         """
         
         
@@ -31,6 +31,7 @@ class BaseAgent(object):
         self.max_steer = config.get('max_steer', 1.0)
 
         self.debug = config.get('debug', False)
+        self.pseudo = False
 
         self.decision_frequency = config.decision_frequency
         self.control_frequency = config.control_frequency
@@ -57,8 +58,8 @@ class BaseAgent(object):
         self.global_path = GlobalPath(None, None, route)
         if self.debug: self.global_path.draw(self.world, life_time=15)
 
-    def run_step(self, client):
-        target_v = self._get_target_v()
+    def run_step(self):
+        target_v = self.get_target_v()
         for _ in range(self.skip_num):
             self.clock.tick_begin()
             control = self.get_control(target_v)
@@ -66,7 +67,7 @@ class BaseAgent(object):
             self.clock.tick_end()
         return
     
-    def _get_target_v(self):
+    def get_target_v(self):
         return self.max_velocity
     
     def get_transform(self):

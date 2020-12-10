@@ -11,8 +11,8 @@ from ..world_map import draw_arrow, get_leading_vehicle_unsafe
 
 
 class IDMAgent(BaseAgent, Agent):
-    def __init__(self, config, world, town_map, vehicle, global_path=None):
-        BaseAgent.__init__(self, config, world, town_map, vehicle, global_path)
+    def __init__(self, config, client, world, town_map, vehicle, global_path=None):
+        BaseAgent.__init__(self, config, client, world, town_map, vehicle, global_path)
         Agent.__init__(self, vehicle)
 
         self.leading_range = 50.0
@@ -26,7 +26,7 @@ class IDMAgent(BaseAgent, Agent):
         self.comfortable_deceleration = 1.5
     
 
-    def _get_target_v(self):
+    def get_target_v(self):
         self._state = AgentState.NAVIGATING
 
         actor_list = self.world.get_actors()

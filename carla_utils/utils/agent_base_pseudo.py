@@ -8,31 +8,30 @@ from ..augment import InnerConvert
 
 
 class BaseAgentPseudo(BaseAgent):
-    def __init__(self, config, world, town_map, vehicle, global_path=None, fast=False):
-        super(BaseAgentPseudo, self).__init__(config, world, town_map, vehicle, global_path)
+    def __init__(self, config, client, world, town_map, vehicle, global_path=None, fast=False):
+        super(BaseAgentPseudo, self).__init__(config, client, world, town_map, vehicle, global_path)
 
         self.distance_range = 100
         self.sampling_resolution = 0.1
 
-        self.fast = fast
+        self.pseudo, self.fast = True, fast
         self._current_transform = None
         self._current_v = 0.0
         self.dt = 1.0 / self.control_frequency
     
 
-    def run_step(self, client):
+    def run_step(self):
         """
             Note: if carla runs in synchronous mode, then needs world.tick() after this method.
         
         Args:
-            client: carla.Client
         
         Returns:
             
         """
         
-        self._current_transform = self.vehicle.get_transform()
-        target_v = self._get_target_v()
+        self.tick_transform()
+        target_v = self.get_target_v()
         for _ in range(self.skip_num):
             self.clock.tick_begin()
             self.next_transform(target_v)
@@ -44,6 +43,8 @@ class BaseAgentPseudo(BaseAgent):
         return self._current_transform
     def get_current_v(self):
         return self._current_v
+    def tick_transform(self):
+        self._current_transform = self.vehicle.get_transform()
 
     def next_transform(self, target_v):
         if self.global_path.reached(5.0):
