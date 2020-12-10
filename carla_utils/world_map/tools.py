@@ -68,6 +68,16 @@ def get_spawn_transform(town_map, spawn_point, height=0.1):
 
 
 def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer', **attributes):
+    """
+    
+    
+    Args:
+        attributes: contains role_name, color
+    
+    Returns:
+        carla.Vehicle
+    """
+    
     bp = create_blueprint(world, type_id, **attributes)
 
     spawn_transforms = town_map.get_spawn_points()
