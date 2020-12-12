@@ -8,8 +8,8 @@ from ..augment import InnerConvert
 
 
 class BaseAgentPseudo(BaseAgent):
-    def __init__(self, config, client, world, town_map, vehicle, global_path=None, fast=False):
-        super(BaseAgentPseudo, self).__init__(config, client, world, town_map, vehicle, global_path)
+    def __init__(self, config, client, world, town_map, vehicle, sensors_master, global_path=None, fast=False):
+        super(BaseAgentPseudo, self).__init__(config, client, world, town_map, vehicle, sensors_master, global_path)
 
         self.distance_range = 100
         self.sampling_resolution = 0.1

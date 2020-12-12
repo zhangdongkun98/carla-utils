@@ -54,6 +54,14 @@ def prob2onehot(prob, length):
 
 
 
+import matplotlib.pyplot as plt
+def plotArrow2D(x, y, theta, length=1.0, width=0.5, fc='r', ec='k'):  # pragma: no cover
+    plt.arrow(x, y, length * np.cos(theta), length * np.sin(theta),
+              fc=fc, ec=ec, head_width=width, head_length=width)
+
+
+
+
 def list_del(list_to_delete, delete_index_list):
     dil = copy.copy(delete_index_list)
     dil.sort()
@@ -61,10 +69,17 @@ def list_del(list_to_delete, delete_index_list):
     for index in dil:
         del list_to_delete[index]
 
-
-import matplotlib.pyplot as plt
-def plotArrow2D(x, y, theta, length=1.0, width=0.5, fc='r', ec='k'):  # pragma: no cover
-    plt.arrow(x, y, length * np.cos(theta), length * np.sin(theta),
-              fc=fc, ec=ec, head_width=width, head_length=width)
-
-
+def flatten_list(input_list):
+    """
+    
+    
+    Args:
+        input_list: 2-d list
+    
+    Returns:
+        1-d list
+    """
+    
+    output_list = []
+    for i in input_list: output_list.extend(i)
+    return output_list

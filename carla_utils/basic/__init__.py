@@ -1,5 +1,7 @@
 
 from .tools import *
+from .tools import flatten_list
+
 from .functions.spiral import QuadraticSpiral, ConstantSpiral
 from .functions import quintic as quintic
 from .coordinate_transformation import RotationMatrix, RotationMatrix2D, RotationMatrixTranslationVector, Euler, Reverse

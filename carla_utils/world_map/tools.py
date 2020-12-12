@@ -1,9 +1,13 @@
 
 import carla
+SpawnActor = carla.command.SpawnActor
 
 import numpy as np
 import random
 import time
+import os, glob
+from os.path import join
+
 
 def connect_to_server(host, port, timeout=2.0, map_name=None, **kwargs):
     client = carla.Client(host, port)
@@ -94,6 +98,33 @@ def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer',
     return vehicle
 
 
+def add_vehicles(client, world, town_map, spawn_points, type_ids, **attributes):
+    """
+    
+    
+    Args:
+        attributes: contains role_names, colors
+    
+    Returns:
+        list of carla.Vehicle
+    """
+    number = len(spawn_points)
+    role_names = attributes.get('role_names', ['hero']*number)
+    colors = attributes.get('colors', [(255,255,255)]*number)
+    bps = [create_blueprint(world, type_ids[i], role_name=role_names[i], color=colors[i]) for i in range(number)]
+    batch = []
+    for bp, spawn_point in zip(bps, spawn_points):
+        spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.1)
+        batch.append(SpawnActor(bp, spawn_transform))
+    
+    actor_ids = []
+    for response in client.apply_batch_sync(batch):
+        if response.error: logging.error(response.error)
+        else: actor_ids.append(response.actor_id)
+    vehicles = world.get_actors(actor_ids)
+    return vehicles
+
+
 
 def get_actor(world, type_id, role_name):
     '''not suitable for multi-agent'''
@@ -162,6 +193,35 @@ def get_reference_route_wrt_waypoint(waypoint, sampling_resolution, sampling_num
     return reference_route
 
 
+file_dir = os.path.dirname(__file__)
+def get_spawn_points(town_map, number):
+    """
+    
+    
+    Args:
+        
+    
+    Returns:
+        list of carla.Location
+    """
+    
+    sp_paths = glob.glob(join(file_dir, './spawn_points/*.txt'))
+    file_name = None
+    for sp_path in sp_paths:
+        map_name = os.path.basename(sp_path).split('.txt')[0]
+        if map_name in town_map.name: file_name = sp_path; break
+    points = np.loadtxt(file_name)
+    length = len(points)
+    if length < number:
+        print('[get_spawn_points] warning: requested %d vehicles, but could only find %d spawn points' % (number, length))
+        number = length
+    mask = random.sample(range(length), number)
+    sample_points = points[mask,:]
+    spawn_points = []
+    for sample_point in sample_points:
+        spawn_points.append(carla.Location(x=sample_point[0], y=sample_point[1], z=sample_point[2]))
+    return spawn_points
+
 
 
 from ..augment import error_transform
@@ -200,4 +260,5 @@ def get_leading_vehicle_unsafe(vehicle, vehicles, reference_waypoints, max_dista
                 break
         if leading_vehicle is not None: break
     return leading_vehicle, leading_distance
+
 

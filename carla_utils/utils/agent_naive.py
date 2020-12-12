@@ -7,8 +7,8 @@ from agents.navigation.agent import Agent, AgentState
 
 
 class NaiveAgent(BaseAgent, Agent):
-    def __init__(self, config, client, world, town_map, vehicle, global_path=None):
-        BaseAgent.__init__(self, config, client, world, town_map, vehicle, global_path)
+    def __init__(self, config, client, world, town_map, vehicle, sensors_master, global_path=None):
+        BaseAgent.__init__(self, config, client, world, town_map, vehicle, sensors_master, global_path)
         Agent.__init__(self, vehicle)
     
 

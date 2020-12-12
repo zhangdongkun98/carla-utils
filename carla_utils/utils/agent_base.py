@@ -9,7 +9,7 @@ from ..system import Clock
 
 
 class BaseAgent(object):
-    def __init__(self, config, client, world, town_map, vehicle, global_path=None):
+    def __init__(self, config, client, world, town_map, vehicle, sensors_master, global_path=None):
         """
         
         
@@ -46,6 +46,7 @@ class BaseAgent(object):
 
         '''vehicle'''
         self.world, self.town_map, self.vehicle = world, town_map, vehicle
+        self.sensors_master = sensors_master
 
         self.global_path, self.random_walk = global_path, False
         if self.global_path is None: self.reset_route()

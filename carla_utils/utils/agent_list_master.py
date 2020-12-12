@@ -6,6 +6,10 @@ from .agent_base import BaseAgent
 from ..system import Clock
 
 
+def createAgentListMaster():
+    pass
+
+
 class AgentListMaster(object):
     def __init__(self, config, client, world):
         """

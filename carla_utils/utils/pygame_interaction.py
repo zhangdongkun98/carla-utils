@@ -160,10 +160,6 @@ class KeyboardControl(object):
                     pass
                 elif event.key == K_n:
                     pass
-                    loc = self.hud.vehicle.get_location()
-                    print(loc.x, loc.y)
-                    from ..world_map import draw_location
-                    draw_location(self.hud.world, loc, life_time=0)
                 elif event.key > K_0 and event.key <= K_9:
                     pass
 

@@ -1,92 +1,59 @@
-# carla_sensor.py
+import carla
 
 import numpy as np
 import weakref
 import copy
 import time
+import logging
 
-from ..system import Singleton, debug
+from ..system import debug
+from ..basic import flatten_list
 from .sensor_callback import CarlaSensorCallback
+from .sensor_create import create_sensor, create_sensor_command
 
 
+def createSensorListMaster(client, world, vehicle, sensors_param_list):
+    blueprint_library = world.get_blueprint_library()
+    batch = [create_sensor_command(world, vehicle, blueprint_library, config) for config in sensors_param_list]
+    sensor_ids = []
+    for response in client.apply_batch_sync(batch):
+        if response.error: raise RuntimeError('spawn sensor failed: ' + response.error)
+        else: sensor_ids.append(response.actor_id)
+    sensors = world.get_actors(sensor_ids)
 
-def createSensoListMaster(world, vehicle, sensors_param_list):
-    sensor_list_master = CarlaSensorListMaster(world, vehicle)
-    for sensor_param_dict in sensors_param_list:
-        callback = sensor_param_dict['callback']
-        sensor = add_sensor(world, vehicle, sensor_param_dict)
-        sensor_list_master.append(sensor, sensor_param_dict['transform'], callback)
-    return sensor_list_master
-
-
-def add_sensor(world, vehicle, sensor_param_dict):
-    sensor = None
-    blueprint = world.get_blueprint_library()
-    if sensor_param_dict['type_id'] == 'sensor.camera.rgb':
-        sensor = CreateSensor.add_camera(world, blueprint, vehicle, sensor_param_dict)
-    elif sensor_param_dict['type_id'] == 'sensor.lidar.ray_cast':
-        sensor = CreateSensor.add_lidar(world, blueprint, vehicle, sensor_param_dict)
-    elif sensor_param_dict['type_id'] == 'sensor.other.imu':
-        sensor = CreateSensor.add_imu(world, blueprint, vehicle, sensor_param_dict)
-    elif sensor_param_dict['type_id'] == 'sensor.other.gnss':
-        sensor = CreateSensor.add_gnss(world, blueprint, vehicle, sensor_param_dict)
-    elif sensor_param_dict['type_id'] == 'sensor.other.collision':
-        sensor = CreateSensor.add_coliision(world, blueprint, vehicle, sensor_param_dict)
-    return sensor
+    sensors_master = CarlaSensorListMaster(world, vehicle)
+    for sensor, config in zip(sensors, sensors_param_list):
+        transform, callback = config['transform'], config['callback']
+        sensors_master.append(sensor, transform, callback)
+    return sensors_master
 
 
-class CreateSensor(object):
-    @staticmethod
-    def add_camera(world, blueprint, vehicle, config):
-        camera_bp = blueprint.find('sensor.camera.rgb')
-        camera_bp.set_attribute('role_name', str(config['role_name']))
-        camera_bp.set_attribute('image_size_x', str(config['image_size_x']))
-        camera_bp.set_attribute('image_size_y', str(config['image_size_y']))
-        camera_bp.set_attribute('fov', str(config['fov']))
-        camera_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
-        camera = world.spawn_actor(camera_bp, config['transform'], attach_to=vehicle)
-        return camera
+def createSensorListMasters(client, world, vehicles, sensors_param_lists):
+    blueprint_library = world.get_blueprint_library()
+    sensors_master_dict = {vehicle.id: CarlaSensorListMaster(world, vehicle) for vehicle in vehicles}
 
-    @staticmethod
-    def add_lidar(world, blueprint, vehicle, config):
-        lidar_bp = blueprint.find('sensor.lidar.ray_cast')
-        lidar_bp.set_attribute('role_name', str(config['role_name']))
-        lidar_bp.set_attribute('channels', str(config['channels']))
-        lidar_bp.set_attribute('rotation_frequency', str(config['rpm']))
-        lidar_bp.set_attribute('points_per_second', str(config['pps']))
-        lidar_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
-        lidar_bp.set_attribute('range', str(config['range']))
-        lidar_bp.set_attribute('lower_fov', str(config['lower_fov']))
-        lidar_bp.set_attribute('upper_fov', str(config['upper_fov']))
-        lidar = world.spawn_actor(lidar_bp, config['transform'], attach_to=vehicle)
-        return lidar
+    batch = []
+    for vehicle, sensors_param_list in zip(vehicles, sensors_param_lists):
+        batch.extend([create_sensor_command(world, vehicle, blueprint_library, config) for config in sensors_param_list])
     
-    @staticmethod
-    def add_imu(world, blueprint, vehicle, config):
-        imu_bp = blueprint.find('sensor.other.imu')
-        imu_bp.set_attribute('role_name', str(config['role_name']))
-        imu_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
-        imu = world.spawn_actor(imu_bp, config['transform'], attach_to=vehicle)
-        return imu
+    sensor_ids = []
+    for response in client.apply_batch_sync(batch):
+        if response.error: raise RuntimeError('spawn sensor failed: ' + response.error)
+        else: sensor_ids.append(response.actor_id)
+    sensors = world.get_actors(sensor_ids)
 
-    @staticmethod
-    def add_gnss(world, blueprint, vehicle, config):
-        gnss_bp = blueprint.find('sensor.other.gnss')
-        gnss_bp.set_attribute('role_name', str(config['role_name']))
-        gnss_bp.set_attribute('sensor_tick', str(config['sensor_tick']))
-        gnss = world.spawn_actor(gnss_bp, config['transform'], attach_to=vehicle)
-        return gnss
-
-    @staticmethod
-    def add_coliision(world, blueprint, vehicle, config):
-        coliision_bp = blueprint.find('sensor.other.collision')
-        coliision_bp.set_attribute('role_name', str(config['role_name']))
-        coliision = world.spawn_actor(coliision_bp, config['transform'], attach_to=vehicle)
-        return coliision
+    sensors_param_list = flatten_list(sensors_param_lists)
+    for sensor, config in zip(sensors, sensors_param_list):
+        transform, callback = config['transform'], config['callback']
+        sensors_master_dict[sensor.parent.id].append(sensor, transform, callback)
+    return list(sensors_master_dict.values())
 
 
-class CarlaSensorListMaster(Singleton):
+
+class CarlaSensorListMaster(object):
     def __init__(self, world, vehicle):
+        self.world, self.vehicle = world, vehicle
+
         self.sensor_list = []
         self.sensor_dict = dict()
 

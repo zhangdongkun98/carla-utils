@@ -7,8 +7,11 @@ from . import basic
 from .augment import *
 
 from .world_map import *
+from .world_map import add_vehicle, add_vehicles
+from .world_map import get_spawn_points
 
-from .sensor import createSensoListMaster, CarlaSensorMaster, CameraParams, PesudoSensor
+'''sensor'''
+from .sensor import createSensorListMaster, createSensorListMasters, CarlaSensorMaster, CameraParams, PesudoSensor
 
 from . import sensor
 
