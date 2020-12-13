@@ -1,4 +1,5 @@
 import carla
+DestroyActor = carla.command.DestroyActor
 
 import time
 
@@ -59,8 +60,8 @@ class BaseAgent(object):
         self.global_path = GlobalPath(None, None, route)
         if self.debug: self.global_path.draw(self.world, life_time=15)
 
-    def run_step(self):
-        target_v = self.get_target_v()
+    def run_step(self, reference):
+        target_v = self.get_target_v(reference)
         for _ in range(self.skip_num):
             self.clock.tick_begin()
             control = self.get_control(target_v)
@@ -68,20 +69,27 @@ class BaseAgent(object):
             self.clock.tick_end()
         return
     
-    def get_target_v(self):
+    def get_target_v(self, reference):
         return self.max_velocity
     
     def get_transform(self):
         return self.vehicle.get_transform()
     def get_current_v(self):
         return vector3DNorm(self.vehicle.get_velocity())
+    def get_state(self):
+        current_transform = self.get_transform()
+        current_v = self.get_current_v()
+        return InnerConvert.CarlaTransformToState(None, None, current_transform, v=current_v)
+    
+    def goal_reached(self, preview_distance):
+        return self.global_path.reached(preview_distance)
 
     def get_control(self, target_v):
-        if self.global_path.reached(5.0):
+        if self.goal_reached(0.0):
             if self.random_walk: print('reset route!'); self.reset_route()
             else: print('goal reached!'); control = carla.VehicleControl(brake=1.0); target_v = 0.0
 
-        current_transform = self.vehicle.get_transform()
+        current_transform = self.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
         if self.debug: draw_arrow(self.world, target_waypoint.transform, life_time=0.1)
 
@@ -90,3 +98,16 @@ class BaseAgent(object):
         target_state = InnerConvert.CarlaTransformToState(None, None, target_waypoint.transform, v=target_v, k=curvature)
         control = self.controller.run_step(current_state, target_state)
         return control
+    
+
+    def destroy(self):
+        self.sensors_master.destroy()
+        self.vehicle.destroy()
+    
+    def destroy_commands(self):
+        cmds = self.sensors_master.destroy_commands()
+        cmds.append(DestroyActor(self.vehicle))
+        return cmds
+
+
+        

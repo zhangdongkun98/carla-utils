@@ -16,7 +16,7 @@ class PointCloud3DVisualizer(object):
             pointcloud: numpy.ndarray (x,y,z,I) × N
         '''
         if self.vis is None:
-            self.vis = open3d.Visualizer()
+            self.vis = open3d.visualization.Visualizer()
             self.vis.create_window(window_name=self.title, width=800, height=800)
             self.pcd = open3d.geometry.PointCloud()
             # initialise the geometry pre loop
@@ -27,8 +27,8 @@ class PointCloud3DVisualizer(object):
             self.vis.add_geometry(self.pcd)
             render_option = self.vis.get_render_option()
             render_option.background_color = np.array([0.1529, 0.1569, 0.1333], np.float32)
-            render_option.point_color_option = open3d.PointColorOption.ZCoordinate
-            coordinate_frame = open3d.geometry.create_mesh_coordinate_frame()
+            render_option.point_color_option = open3d.visualization.PointColorOption.ZCoordinate
+            coordinate_frame = open3d.geometry.TriangleMesh.create_coordinate_frame()
             self.vis.add_geometry(coordinate_frame)
             view_control = self.vis.get_view_control()
             params = view_control.convert_to_pinhole_camera_parameters()

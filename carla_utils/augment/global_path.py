@@ -3,6 +3,7 @@ import carla
 import time
 import numpy as np
 import copy
+import random
 
 from agents.navigation.local_planner import RoadOption
 from .tools import error_transform, distance_waypoint
@@ -98,6 +99,8 @@ class GlobalPath(object):
             length += distance_waypoint(self.carla_waypoints[index], self.carla_waypoints[index+1])
             if length >= distance:
                 break
+        
+        if index == len(self)-1: return random.choice(self.carla_waypoints[index].next(distance))
 
         waypoint_i, waypoint_ip = self.carla_waypoints[index], self.carla_waypoints[index+1]
 

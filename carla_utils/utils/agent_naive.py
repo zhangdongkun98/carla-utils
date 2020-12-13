@@ -12,7 +12,7 @@ class NaiveAgent(BaseAgent, Agent):
         Agent.__init__(self, vehicle)
     
 
-    def get_target_v(self):
+    def get_target_v(self, reference):
         hazard_detected = False
 
         actor_list = self.world.get_actors()

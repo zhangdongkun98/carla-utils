@@ -151,7 +151,7 @@ class KeyboardControl(object):
                 elif event.key == K_F1:
                     self.hud.toggle_info()
                 elif event.key == K_TAB:
-                    self.hud.sensor_manager.toggle_camera()
+                    self.hud.sensors_master.toggle_camera()
                 elif event.key == K_c and pygame.key.get_mods() & KMOD_SHIFT:
                     self.hud.next_weather(reverse=True)
                 elif event.key == K_c:
@@ -278,9 +278,9 @@ class KeyboardControl(object):
 
 
 class HUD(object):
-    def __init__(self, client, world, vehicle, sensor_manager, display):
+    def __init__(self, client, world, vehicle, sensors_master, display):
         self.client, self.world, self.town_map = client, world, world.get_map()
-        self.vehicle, self.sensor_manager = vehicle, sensor_manager
+        self.vehicle, self.sensors_master = vehicle, sensors_master
         self.display = display
 
         dim = (self.display.get_width(), self.display.get_height())
@@ -319,7 +319,7 @@ class HUD(object):
 
     def tick(self, clock):
         self._notifications.tick(clock)
-        carla_image = self.sensor_manager.get_camera().get_raw_data()
+        carla_image = self.sensors_master.get_camera().get_raw_data()
         if carla_image is None: print('[pygame_interaction] tick: warning'); return
         self._surface = make_surface(carla_image)
         if not self._show_info:
@@ -331,7 +331,7 @@ class HUD(object):
         a = self.vehicle.get_acceleration()
 
         # self.notification('Collision with %r' % data.other_actor.type_id)
-        colhist = parse_collision_history(self.sensor_manager[('sensor.other.collision', 'default')].get_data())
+        colhist = parse_collision_history(self.sensors_master[('sensor.other.collision', 'default')].get_data())
         collision = [colhist[x + self.frame - 200] for x in range(0, 200)]
         max_col = max(1.0, max(collision))
         collision = [x / max_col for x in collision]
@@ -468,7 +468,7 @@ class FadingText(object):
 
 
 class PyGameInteraction(object):
-    def __init__(self, client, vehicle, sensor_manager, config):
+    def __init__(self, client, vehicle, sensors_master, config):
         '''
             Args:
             config: need to contain:
@@ -485,7 +485,7 @@ class PyGameInteraction(object):
 
         self.clock = pygame.time.Clock()
         self.client = client
-        self.hud = HUD(client, client.get_world(), vehicle, sensor_manager, self.display)
+        self.hud = HUD(client, client.get_world(), vehicle, sensors_master, self.display)
         self.kb_control = KeyboardControl(self.hud, self.display)
 
 

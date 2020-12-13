@@ -104,3 +104,7 @@ class ArcLength(object):
         l = d * abs(theta / np.sin(theta))
         curvature = -2*np.sin(theta) / d
         return l, curvature
+
+
+
+

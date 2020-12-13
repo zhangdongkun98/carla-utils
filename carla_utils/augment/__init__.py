@@ -14,5 +14,5 @@ from .trajectory import Trajectory
 from .obstacle_predict import ObstaclePredict
 
 from .inner_convert import InnerConvert
-from .tools import vectorYawRad, vector2DNorm, vector3DNorm
+from .tools import vector3DToArray, vectorYawRad, vector2DNorm, vector3DNorm
 from .tools import error_state, error_transform, distance_waypoint, ArcLength

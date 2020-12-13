@@ -1,4 +1,5 @@
 import carla
+DestroyActor = carla.command.DestroyActor
 
 import numpy as np
 import weakref
@@ -70,6 +71,9 @@ class CarlaSensorListMaster(object):
             self.camera_rgb_list.append(sensor_master)
 
 
+    def reset(self):
+        [sensor_master.reset() for sensor_master in self.sensor_dict.values()]
+
     def get_camera(self):
         sensor_master = None
         try:
@@ -84,6 +88,12 @@ class CarlaSensorListMaster(object):
     def destroy(self):
         for sensor_master in self.sensor_dict.values():
             sensor_master.destroy()
+    def destroy_commands(self):
+        """
+            Note: do not destroy vehicle in this class.
+        """
+        return [sensor_master.destroy_command() for sensor_master in self.sensor_dict.values()]
+
 
     def __del__(self):
         self.destroy()
@@ -117,6 +127,7 @@ class CarlaSensorMaster(object):
         self.type_id = sensor.type_id
         self.attributes = sensor.attributes
 
+        # TODO
         if 'lidar' in sensor.type_id:
             self.frame_id = 'lidar/{}'.format(sensor.attributes['role_name'])
         elif 'camera' in sensor.type_id:
@@ -131,7 +142,7 @@ class CarlaSensorMaster(object):
         weak_self = weakref.ref(self)
         if callback is not None:
             self.callback = lambda data: callback(weak_self, data)
-        else:
+        else:  # TODO
             '''default callback'''
             if 'lidar' in sensor.type_id:
                 self.callback = lambda data: CarlaSensorCallback.lidar(weak_self, data)
@@ -150,6 +161,12 @@ class CarlaSensorMaster(object):
         return
 
 
+    def reset(self):
+        if self.sensor.is_listening: self.sensor.stop()
+        self.raw_data, self.data = None, None
+        self.sensor.listen(self.callback)
+
+
     def get_transform(self):
         '''
             transform relative to parent actor
@@ -165,5 +182,9 @@ class CarlaSensorMaster(object):
 
 
     def destroy(self):
-        self.sensor.stop()
+        if self.sensor.is_listening: self.sensor.stop()
         self.sensor.destroy()
+    def destroy_command(self):
+        if self.sensor.is_listening: self.sensor.stop()
+        return DestroyActor(self.sensor)
+

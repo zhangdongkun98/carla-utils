@@ -9,6 +9,9 @@ import os, glob
 from os.path import join
 
 
+def tick_world(world):
+    if world.get_settings().synchronous_mode: world.tick()
+
 def connect_to_server(host, port, timeout=2.0, map_name=None, **kwargs):
     client = carla.Client(host, port)
     client.set_timeout(timeout)
@@ -93,7 +96,8 @@ def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer',
     if spawn_point:
         spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.2)
         vehicle.set_transform(spawn_transform)
-    world.tick()
+    # world.tick() # TODO check
+    tick_world(world)
     print('spawn_point: x={}, y={}'.format(vehicle.get_location().x, vehicle.get_location().y))
     return vehicle
 
@@ -119,9 +123,10 @@ def add_vehicles(client, world, town_map, spawn_points, type_ids, **attributes):
     
     actor_ids = []
     for response in client.apply_batch_sync(batch):
-        if response.error: logging.error(response.error)
+        if response.error: raise RuntimeError('spawn sensor failed: ' + response.error)
         else: actor_ids.append(response.actor_id)
     vehicles = world.get_actors(actor_ids)
+    tick_world(world)
     return vehicles
 
 

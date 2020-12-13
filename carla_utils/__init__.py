@@ -4,8 +4,11 @@ from .system import parse_json_file, parse_yaml_file, parse_yaml_file_unsafe, pr
 
 from . import basic
 
+'''augment'''
 from .augment import *
+from .augment import vector3DToArray
 
+from .world_map import tick_world
 from .world_map import *
 from .world_map import add_vehicle, add_vehicles
 from .world_map import get_spawn_points

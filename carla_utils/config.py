@@ -5,7 +5,6 @@ from os.path import join
 
 
 if __name__ == "__main__":
-    print(sys.argv)
     current_path = os.getcwd()
 
     args = ''

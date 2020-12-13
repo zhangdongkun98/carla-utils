@@ -26,7 +26,7 @@ class IDMAgent(BaseAgent, Agent):
         self.comfortable_deceleration = 1.5
     
 
-    def get_target_v(self):
+    def get_target_v(self, reference):
         self._state = AgentState.NAVIGATING
 
         actor_list = self.world.get_actors()
