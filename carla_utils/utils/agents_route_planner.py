@@ -1,6 +1,5 @@
 
 import carla
-import numpy as np
 import copy
 import time
 
@@ -8,7 +7,7 @@ from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
 from .. import basic
-from ..augment import GlobalPath, vectorYawRad
+from ..augment import GlobalPath
 from ..world_map import draw_waypoints, get_reference_route_wrt_waypoint
 
 

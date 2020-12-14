@@ -74,6 +74,21 @@ class AgentListMaster(object):
         batch = [ApplyTransform(agent.vehicle, agent.get_transform_pesudo()) for agent in self.agents]
         self.client.apply_batch_sync(batch)
         return
+    
+    def _run_step_pseudo_v2(self, references):
+        [agent.tick_transform() for agent in self.agents]
+        target_v_list = [agent.get_target_v(reference) for agent, reference in zip(self.agents, references)]
+        dist = [0.0 for _ in range(len(self.agents))]
+        for _ in range(self.skip_num):
+            self.clock.tick_begin()
+            for i, (agent, target_v) in enumerate(zip(self.agents, target_v_list)):
+                dist[i] += agent.next_transform(target_v)
+            if not self.fast: self.clock.tick_end()
+        batch = [ApplyTransform(agent.vehicle, agent.get_transform_pesudo()) for agent in self.agents]
+        self.client.apply_batch_sync(batch)
+
+        print('dist: ', dist)
+        return
 
 
 

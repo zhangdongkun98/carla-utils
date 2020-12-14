@@ -4,7 +4,6 @@ import time
 import numpy as np
 
 from .agent_base import BaseAgent
-from ..augment import InnerConvert
 
 
 class BaseAgentPseudo(BaseAgent):

@@ -302,10 +302,10 @@ class HUD(object):
         self.server_fps = 0
         self.frame = 0
         self.simulation_time = 0
+        self._server_clock = pygame.time.Clock()
 
         self._show_info = True
         self._info_text = []
-        self._server_clock = pygame.time.Clock()
 
         self._weather_presets = find_weather_presets()
         self._weather_index = 0
