@@ -4,6 +4,7 @@ ApplyTransform = carla.command.ApplyTransform
 
 from .agent_base import BaseAgent
 from ..system import Clock
+from ..augment import CollisionCheck
 from ..world_map import tick_world
 
 
@@ -31,24 +32,21 @@ class AgentListMaster(object):
 
         self.clock = Clock(self.control_frequency)
 
-        self.agents, self.vehicles = [], []
-        self.num_agents = 0
-        self.vehicle_ids = []
+        self.agents, self.agents_learnable = [], []
         self.run_step = self._run_step_pseudo if self.pseudo else self._run_step_real
 
 
-    def register(self, agent : BaseAgent):
+    def register(self, agent : BaseAgent, learnable=True):
         assert self.pseudo == agent.pseudo
         self.agents.append(agent)
-        self.vehicles.append(agent.vehicle)
-        self.vehicle_ids.append(agent.vehicle.id)
-        self.num_agents += 1
+        if learnable: self.agents_learnable.append(agent)
     
     def destroy(self):
         batch = []
         for agent in self.agents: batch.extend(agent.destroy_commands())
         self.client.apply_batch_sync(batch)
         tick_world(self.world)
+        self.agents, self.agents_learnable = [], []
     
 
     def _run_step_real(self, references):
@@ -56,9 +54,9 @@ class AgentListMaster(object):
         for _ in range(self.skip_num):
             self.clock.tick_begin()
             batch = []
-            for agent, vehicle, target_v in zip(self.agents, self.vehicles, target_v_list):
+            for agent, target_v in zip(self.agents, target_v_list):
                 control = agent.get_control(target_v)
-                batch.append(ApplyVehicleControl(vehicle, control))
+                batch.append(ApplyVehicleControl(agent.vehicle, control))
             self.client.apply_batch_sync(batch)
             self.clock.tick_end()
         return
@@ -89,6 +87,21 @@ class AgentListMaster(object):
 
         print('dist: ', dist)
         return
+    
+
+    def check_collision(self):
+        num_agents = len(self.agents)
+        collisions = [False] * num_agents
+        for i, agent in enumerate(self.agents):
+            if collisions[i] == True: continue
+            for j, other_agent in enumerate(self.agents):
+                if agent.id == other_agent.id: continue
+                if CollisionCheck.d2(agent.vehicle, other_agent.vehicle):
+                    collisions[i] = True
+                    collisions[j] = True
+        return collisions
+
+        
 
 
 

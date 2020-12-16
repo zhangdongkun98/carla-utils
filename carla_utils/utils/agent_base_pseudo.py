@@ -7,8 +7,8 @@ from .agent_base import BaseAgent
 
 
 class BaseAgentPseudo(BaseAgent):
-    def __init__(self, config, client, world, town_map, vehicle, sensors_master, global_path=None):
-        BaseAgent.__init__(self, config, client, world, town_map, vehicle, sensors_master, global_path)
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
+        BaseAgent.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
 
         self.distance_range = 100
         self.sampling_resolution = 0.1
@@ -47,8 +47,8 @@ class BaseAgentPseudo(BaseAgent):
 
     def next_transform(self, target_v):
         if self.global_path.reached(0.0):
-            if self.random_walk: print('[BaseAgentPseudo] reset route!'); self.reset_route()
-            else: print('[BaseAgentPseudo] goal reached!'); target_v = 0.0
+            if self.random_walk: self.reset_route(); print('[BaseAgentPseudo] reset route!')
+            else: target_v = 0.0; #print('[BaseAgentPseudo] goal reached!')
 
         current_transform = self.get_transform_pesudo()
         current_v = self.get_current_v()

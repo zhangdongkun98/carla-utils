@@ -2,31 +2,51 @@ import carla
 
 import time
 
+from enum import Enum
+
 from .agent_base import BaseAgent
-from agents.navigation.agent import Agent, AgentState
+# from agents.navigation.agent import Agent, AgentState
+from .tools import get_leading_agent_unsafe
 
 
-class NaiveAgent(BaseAgent, Agent):
-    def __init__(self, config, client, world, town_map, vehicle, sensors_master, global_path=None):
-        BaseAgent.__init__(self, config, client, world, town_map, vehicle, sensors_master, global_path)
-        Agent.__init__(self, vehicle)
+class AgentState(Enum):
+    """
+    AGENT_STATE represents the possible states of a roaming agent
+    """
+    NAVIGATING = 1
+    BLOCKED_BY_VEHICLE = 2
+    BLOCKED_RED_LIGHT = 3
+
+
+class NaiveAgent(BaseAgent):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
+        BaseAgent.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
+        # Agent.__init__(self, vehicle)
+
+        self.leading_range = 15.0
+        assert self.leading_range < self.distance_range
     
 
     def get_target_v(self, reference):
+        agents = reference
         hazard_detected = False
 
-        actor_list = self.world.get_actors()
-        vehicle_list = actor_list.filter("*vehicle*")
-        lights_list = actor_list.filter("*traffic_light*")
+        # actor_list = self.world.get_actors()
+        # lights_list = actor_list.filter("*traffic_light*")
+        # '''get traffic light'''
+        # light_state, traffic_light = self._is_light_red(lights_list)
+        # if light_state: self._state = AgentState.BLOCKED_RED_LIGHT
 
-        vehicle_state, vehicle = self._is_vehicle_hazard(vehicle_list)
-        if vehicle_state:
+        '''get leading agent'''
+        current_transform = self.vehicle.get_transform()
+        reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
+        if remaining_distance < self.leading_range:
+            self.reset_route()
+            reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
+
+        agent, _ = get_leading_agent_unsafe(self, agents, reference_waypoints, max_distance=self.leading_range)
+        if agent is not None:
             self._state = AgentState.BLOCKED_BY_VEHICLE
-            hazard_detected = True
-
-        light_state, traffic_light = self._is_light_red(lights_list)
-        if light_state:
-            self._state = AgentState.BLOCKED_RED_LIGHT
             hazard_detected = True
 
         target_v = -1.0 if hazard_detected else self.max_velocity

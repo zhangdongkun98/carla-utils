@@ -1,5 +1,7 @@
+import carla
 
 import numpy as np
+from shapely.geometry import Polygon
 
 from .. import basic
 
@@ -108,3 +110,49 @@ class ArcLength(object):
 
 
 
+def get_actor_radius(actor : carla.Actor):
+    bounding_box = actor.bounding_box.extent
+    radius = np.hypot(bounding_box.x, bounding_box.y)
+    return radius
+
+
+class ActorVertices(object):
+    @staticmethod
+    def d2(actor, expand=carla.Vector2D(0.0,0.0)):
+        if not hasattr(actor, 'bounding_box'): raise RuntimeError
+
+        t = actor.get_transform()
+        dx, dy = actor.bounding_box.extent.x +expand.x, actor.bounding_box.extent.y +expand.y
+        center_x, center_y, theta = t.location.x, t.location.y, np.deg2rad(t.rotation.yaw)
+
+        l, n = np.array([np.cos(theta), np.sin(theta)]), np.array([np.cos(theta+np.pi/2), np.sin(theta+np.pi/2)])
+        vertices = np.expand_dims(np.array([center_x, center_y]), axis=0).repeat(4, axis=0)
+
+        vertices[0] +=  l*dx + n*dy
+        vertices[1] += -l*dx + n*dy
+        vertices[2] += -l*dx - n*dy
+        vertices[3] +=  l*dx - n*dy
+        return vertices
+
+
+class CollisionCheck(object):
+    """
+    Note: currently, for synchronous mode. TODO: for asynchronous mode.
+    """
+    
+    @staticmethod
+    def d2(actor1, actor2, expand=carla.Vector2D(0.05,0.05)):
+        """
+        
+        
+        Args:
+            expand: for asynchronous mode, use carla.Vector2D(0.1, 0.05)
+        
+        Returns:
+            bool
+        """
+        
+        p1 = Polygon(ActorVertices.d2(actor1, expand))
+        p2 = Polygon(ActorVertices.d2(actor2, expand))
+        result = p1.intersects(p2)
+        return result

@@ -102,7 +102,7 @@ def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer',
     return vehicle
 
 
-def add_vehicles(client, world, town_map, spawn_points, type_ids, **attributes):
+def add_vehicles(client, world, town_map, enable_physics, spawn_points, type_ids, **attributes):
     """
     
     
@@ -126,6 +126,7 @@ def add_vehicles(client, world, town_map, spawn_points, type_ids, **attributes):
         if response.error: raise RuntimeError('spawn sensor failed: ' + response.error)
         else: actor_ids.append(response.actor_id)
     vehicles = world.get_actors(actor_ids)
+    for vehicle in vehicles: vehicle.set_simulate_physics(enable_physics)
     tick_world(world)
     return vehicles
 

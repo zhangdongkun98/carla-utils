@@ -10,7 +10,7 @@ from ..system import Clock
 
 
 class BaseAgent(object):
-    def __init__(self, config, client, world, town_map, vehicle, sensors_master, global_path=None):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
         """
         
         
@@ -49,16 +49,25 @@ class BaseAgent(object):
         self.world, self.town_map, self.vehicle = world, town_map, vehicle
         self.sensors_master = sensors_master
 
+        self.id = vehicle.id
+
         self.global_path, self.random_walk = global_path, False
         if self.global_path is None: self.reset_route()
         elif self.debug: self.global_path.draw(self.world, life_time=15)
         return
+
+    def reset(self):
+        if self.random_walk: return
+        self.sensors_master.reset()
+        self.global_path.reset()
 
     def reset_route(self):
         self.random_walk = True
         route = get_reference_route(self.town_map, self.vehicle, self.distance_range, self.sampling_resolution)
         self.global_path = GlobalPath(None, None, route)
         if self.debug: self.global_path.draw(self.world, life_time=15)
+    
+    def mode_random_walk(self): self.reset_route()
 
     def run_step(self, reference):
         target_v = self.get_target_v(reference)
@@ -86,8 +95,8 @@ class BaseAgent(object):
 
     def get_control(self, target_v):
         if self.goal_reached(0.0):
-            if self.random_walk: print('reset route!'); self.reset_route()
-            else: print('goal reached!'); control = carla.VehicleControl(brake=1.0); target_v = 0.0
+            if self.random_walk: self.reset_route(); #print('reset route!')
+            else: control = carla.VehicleControl(brake=1.0); target_v = 0.0; #print('goal reached!')
 
         current_transform = self.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
@@ -108,6 +117,10 @@ class BaseAgent(object):
         cmds = self.sensors_master.destroy_commands()
         cmds.append(DestroyActor(self.vehicle))
         return cmds
+    
+
+    def check_collision(self):
+        return self.sensors_master[('sensor.other.collision', 'default')].get_raw_data() is not None
 
 
         

@@ -21,6 +21,7 @@ setup(
         'tensorboardX',
         'psutil',
         'pynvml',
+        'Shapely'
     ],
 
     include_package_data=True

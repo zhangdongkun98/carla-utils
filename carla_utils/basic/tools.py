@@ -21,7 +21,7 @@ def np_dot(*args):
         res = np.dot(res, arg)
     return res
 
-def int2onehot(index : int, length):
+def int2onehot(index, length):
     '''
     Args:
         index: (batch_size,)
@@ -30,8 +30,7 @@ def int2onehot(index : int, length):
     if isinstance(index, torch.Tensor):
         return nn.functional.one_hot(index.to(torch.int64), length).to(index.dtype)
     elif isinstance(index, np.ndarray):
-        raise NotImplementedError
-        return np.eye(1, length, k=index)[0]
+        return np.eye(length)[index.reshape(-1)]
     elif isinstance(index, int):
         return np.eye(1, length, k=index)[0]
     else: raise NotImplementedError

@@ -3,6 +3,7 @@ import os, sys
 from os.path import join
 import glob
 import json
+from numpy.lib.arraysetops import isin
 import yaml
 import inspect
 
@@ -62,7 +63,7 @@ def parse_yaml_file_unsafe(file_path):
     with open(file_path) as f:
         data = yaml.load(f, Loader=yaml.FullLoader)
     config = YamlConfig(data, file_path)
-    config.set_path(os.path.abspath(file_path))
+    # config.set_path(os.path.abspath(file_path))
     return config
 
 class YamlConfig(object):
@@ -97,13 +98,42 @@ class YamlConfig(object):
             None
         """
 
+        block_words = self._get_block_words()
+        print(block_words, 'haha')
+
         for attribute in dir(config):
+            if attribute in block_words:
+                if not isinstance(config, YamlConfig): print('[YamlConfig] ignore attribute: ', attribute)
+                continue
             if not attribute.startswith('_'):
                 setattr(self, attribute, getattr(config, attribute))
         return
     
-    def set_path(self, path):
-        self.path = path
+    def _get_block_words(self):
+        block_words = [attr for attr in dir(YamlConfig) if callable(getattr(YamlConfig, attr)) and not attr.startswith('_')]
+        return block_words
+    
+    # def set_path(self, path):
+    #     self.path = path
+    
+    def convert_to_dict(self):
+        block_words = self._get_block_words()
+        result = dict()
+        for attribute in dir(self):
+            if attribute in block_words: continue
+            if not attribute.startswith('_'):
+                value = getattr(self, attribute)
+                if isinstance(value, YamlConfig):
+                    result[attribute] = value.convert_to_dict()
+                else: result[attribute] = value
+        return result
+
+    def save(self, path):
+        config_dict = self.convert_to_dict()
+        with open(join(path, 'config.yaml'), 'w', encoding='utf-8') as f:
+            yaml.dump(data=config_dict, stream=f, allow_unicode=True)
+        return
+
 
 
 class Singleton(object):

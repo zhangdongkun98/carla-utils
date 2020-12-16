@@ -18,8 +18,7 @@ def create_dir(config, model_name):
     output_path = join('results', dataset_name, 'output')
     os.makedirs(save_model_path, exist_ok=True)
     os.makedirs(output_path, exist_ok=True)
-    cmd = 'cp ' + config.path + ' ' + join('results', dataset_name)
-    os.system(cmd)
+    config.save(join('results', dataset_name))
     return PathPack(log_path, save_model_path, output_path)
 
 
