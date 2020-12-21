@@ -36,10 +36,9 @@ def int2onehot(index, length):
     else: raise NotImplementedError
     
 def onehot2int(one_hot):
-    if isinstance(one_hot, torch.Tensor):
+    if isinstance(one_hot, torch.Tensor):  ## will squeeze one dimension
         return torch.argmax(one_hot, dim=-1)
-    else: raise NotImplementedError
-    return np.argmax(one_hot)
+    else: raise NotImplementedError; return np.argmax(one_hot)
 
 
 def prob2onehot(prob, length):
