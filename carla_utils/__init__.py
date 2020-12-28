@@ -21,10 +21,11 @@ from .sensor import CameraParams, PesudoSensor
 from . import sensor
 
 
-'''utils'''
-from .utils import AgentsRoutePlanner, PyGameInteraction, NPC
-from .utils import Controller
-from .utils import BaseAgent, NaiveAgent, IDMAgent
-from .utils import BaseAgentPseudo, NaiveAgentPseudo
-from .utils import AgentListMaster
+'''agents'''
+from .agents import AgentsRoutePlanner, Controller
+from .agents import BaseAgent, NaiveAgent, IDMAgent
+from .agents import BaseAgentPseudo, NaiveAgentPseudo
+from .agents import AgentListMaster
 
+'''utils'''
+from .utils import PyGameInteraction, NPC

@@ -41,6 +41,11 @@ class AgentListMaster(object):
         self.agents.append(agent)
         if learnable: self.agents_learnable.append(agent)
     
+    def remove(self, agent):
+        if agent in self.agents_learnable: self.agents_learnable.remove(agent)
+        if agent in self.agents: self.agents.remove(agent)
+
+    
     def destroy(self):
         batch = []
         for agent in self.agents: batch.extend(agent.destroy_commands())

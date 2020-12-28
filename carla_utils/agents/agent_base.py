@@ -96,7 +96,7 @@ class BaseAgent(object):
     def get_control(self, target_v):
         if self.goal_reached(0.0):
             if self.random_walk: self.reset_route(); #print('reset route!')
-            else: control = carla.VehicleControl(brake=1.0); target_v = 0.0; #print('goal reached!')
+            # else: print('goal reached!')
 
         current_transform = self.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
