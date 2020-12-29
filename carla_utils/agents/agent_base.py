@@ -6,6 +6,7 @@ import time
 from .controller import Controller
 from ..augment import GlobalPath, InnerConvert, vector3DNorm
 from ..world_map import get_reference_route, draw_arrow
+from ..sensor import CarlaSensorListMaster
 from ..system import Clock
 
 
@@ -47,7 +48,7 @@ class BaseAgent(object):
 
         '''vehicle'''
         self.world, self.town_map, self.vehicle = world, town_map, vehicle
-        self.sensors_master = sensors_master
+        self.sensors_master : CarlaSensorListMaster = sensors_master
 
         self.id = vehicle.id
 

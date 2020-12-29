@@ -33,6 +33,7 @@ pip install -e .
 	
 	- sensor
 	- world_map
+	
 	- agents
 	- utils   # contains class easy to use
 	
