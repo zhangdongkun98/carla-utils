@@ -90,8 +90,37 @@ class HomogeneousMatrixInverse(object):
         return np.vstack((np.hstack((R.T, -np.dot(R.T, t))), np.array([0,0,0,1])))
 
 
-def HomogeneousMatrix2D(R, t):
-    return np.vstack((np.hstack((R, t)), np.array([0,0,1])))
+
+class HomogeneousMatrix2D(object):
+    @staticmethod
+    def rotation_translation(theta, t):
+        '''Rotation Angle theta and translation vector t'''
+        R = RotationMatrix2D(theta)
+        return np.vstack((np.hstack((R, t)), np.array([0,0,1])))
+    
+    @staticmethod
+    def xytheta(xytheta):
+        if len(xytheta) != 3:
+            raise ValueError("Must supply 3 values to build transform")
+        theta = xytheta[-1]
+        t = np.array(xytheta[0:2]).reshape(2,1)
+        return HomogeneousMatrix2D.rotation_translation(theta, t)
+
+
+class HomogeneousMatrixInverse2D(object):
+    @staticmethod
+    def rotation_translation(theta, t):
+        '''Rotation Angle theta and translation vector t'''
+        R = RotationMatrix2D(theta)
+        return np.vstack((np.hstack((R.T, -np.dot(R.T, t))), np.array([0,0,1])))
+
+    @staticmethod
+    def xytheta(xytheta):
+        if len(xytheta) != 3:
+            raise ValueError("Must supply 3 values to build transform")
+        theta = xytheta[-1]
+        t = np.array(xytheta[0:2]).reshape(2,1)
+        return HomogeneousMatrixInverse2D.rotation_translation(theta, t)
 
 
 

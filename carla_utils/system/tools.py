@@ -99,7 +99,6 @@ class YamlConfig(object):
         """
 
         block_words = self._get_block_words()
-        print(block_words, 'haha')
 
         for attribute in dir(config):
             if attribute in block_words:

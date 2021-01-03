@@ -2,7 +2,10 @@
 import os
 from os.path import join
 import time
+from collections import namedtuple
 
+
+PathPack = namedtuple('PathPack', ('log_path', 'save_model_path', 'output_path'))
 
 def create_dir(config, model_name):
     '''
@@ -21,9 +24,3 @@ def create_dir(config, model_name):
     config.save(join('results', dataset_name))
     return PathPack(log_path, save_model_path, output_path)
 
-
-class PathPack(object):
-    def __init__(self, log_path, save_model_path, output_path):
-        self.log_path = log_path
-        self.save_model_path = save_model_path
-        self.output_path = output_path
