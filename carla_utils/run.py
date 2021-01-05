@@ -26,8 +26,6 @@ if __name__ == "__main__":
 
     server_path = os.environ['CARLAPATH']
 
-    print(dir(args))
-
     cmd = 'bash ' + join(server_path, 'CarlaUE4.sh')
     if args.quality:
         cmd += ' -quality-level=Low'
