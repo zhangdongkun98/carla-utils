@@ -1,0 +1,18 @@
+
+### env
+host: '127.0.0.1'
+port: 2000
+timeout: 2.0
+map_name: /Game/map_package/Maps/intersection_learning/intersection_learning
+# map_name: Town01
+pseudo: false
+fast: false
+
+
+### agents
+role_name: 'hero'
+type_id: 'vehicle.tesla.model3'
+
+max_vehicles: 20
+
+
