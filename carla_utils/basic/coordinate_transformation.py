@@ -88,6 +88,14 @@ class HomogeneousMatrixInverse(object):
     def rotation_translation(R, t):
         '''Rotation Matrix R and translation vector t'''
         return np.vstack((np.hstack((R.T, -np.dot(R.T, t))), np.array([0,0,0,1])))
+    
+    @staticmethod
+    def xyzrpy(xyzrpy):
+        if len(xyzrpy) != 6:
+            raise ValueError("Must supply 6 values to build transform")
+        R = RotationMatrix.rpy(xyzrpy[3], xyzrpy[4], xyzrpy[5])
+        t = np.array(xyzrpy[0:3]).reshape(3,1)
+        return HomogeneousMatrixInverse.rotation_translation(R, t)
 
 
 
