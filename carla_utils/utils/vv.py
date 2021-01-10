@@ -9,6 +9,8 @@ from ..basic import RotationMatrix, HomogeneousMatrix
 from ..augment import vector3DToArray
 from ..world_map import connect_to_server
 
+from .tools import generate_args
+
 
 def calculate_vis_bounding_box(vehicle : carla.Vehicle):
     current_transform = vehicle.get_transform()
@@ -110,27 +112,6 @@ class VehiclesVisualizer(object):
 
 
 
-def generate_args():
-    import argparse
-    argparser = argparse.ArgumentParser(description=__doc__)
-    argparser.add_argument(
-        '--host',
-        metavar='H',
-        default='127.0.0.1',
-        help='IP of the host server (default: 127.0.0.1)')
-    argparser.add_argument(
-        '-p', '--port',
-        metavar='P',
-        default=2000,
-        type=int,
-        help='TCP port to listen to (default: 2000)')
-    argparser.add_argument(
-        '-m', '--map',
-        dest='map_name',
-        help='load a new map, use --list to see available maps')
-    args = argparser.parse_args()
-    return args
-
 
 if __name__ == "__main__":
     import os
@@ -144,6 +125,7 @@ if __name__ == "__main__":
         config = parse_yaml_file_unsafe(join(file_dir, './default_carla.yaml'))
     args = generate_args()
     config.update(args)
+    
     vehicles_visualizer = VehiclesVisualizer(config)
     try:
         vehicles_visualizer.run()

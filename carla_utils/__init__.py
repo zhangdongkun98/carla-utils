@@ -29,3 +29,6 @@ from .agents import AgentListMaster
 
 '''utils'''
 from .utils import PyGameInteraction, NPC
+
+
+import carla
