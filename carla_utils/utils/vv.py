@@ -1,3 +1,8 @@
+'''
+    vehicle_visualizer
+'''
+print(__doc__)
+
 import carla
 
 import numpy as np

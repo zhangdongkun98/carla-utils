@@ -1,3 +1,8 @@
+'''
+    clear_actors
+'''
+print(__doc__)
+
 import carla
 
 from ..system import parse_yaml_file_unsafe

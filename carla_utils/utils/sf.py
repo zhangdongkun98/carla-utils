@@ -1,9 +1,17 @@
+'''
+    server_fps
+'''
+print(__doc__)
+
 import carla
 
 import pygame
 
 from ..system import parse_yaml_file_unsafe, Clock
 from ..world_map import connect_to_server
+
+from .tools import generate_args
+
 
 class ServerFps(object):
     def __init__(self, config):
@@ -28,17 +36,29 @@ class ServerFps(object):
 
     def run(self):
         while True:
-            t1 = self.clock.tick_begin()
+            self.clock.tick_begin()
 
             self.run_step()
 
-            t2 = self.clock.tick_end()
+            self.clock.tick_end()
 
 
 if __name__ == "__main__":
-    config = parse_yaml_file_unsafe('./config/carla.yaml')
+    import os
+    from os.path import join
+
+    try:
+        config = parse_yaml_file_unsafe('./config/carla.yaml')
+    except FileNotFoundError:
+        print('[vehicle_visualizer] use default config.')
+        file_dir = os.path.dirname(__file__)
+        config = parse_yaml_file_unsafe(join(file_dir, './default_carla.yaml'))
+    args = generate_args()
+    config.update(args)
+    
     server_fps = ServerFps(config)
     try:
         server_fps.run()
     except KeyboardInterrupt:
         print('canceled by user')
+
