@@ -42,7 +42,7 @@ class State(object):
         
 
     def __str__(self):
-        obj = 'frame_id: {}, time_stamp: {}, x: {}, y: {}, theta: {}'.format(self.frame_id, self.time_stamp, self.x, self.y, self.theta)
+        obj = 'frame_id: {}, time_stamp: {}, x: {}, y: {}, theta: {}, v: {}'.format(self.frame_id, self.time_stamp, self.x, self.y, self.theta, self.v)
         return obj
 
 

@@ -36,6 +36,30 @@ def calculate_vis_bounding_box(vehicle : carla.Vehicle):
     bounding_box.z_axis = rotation_matrix[:,2] * extent.z
     return bounding_box
 
+def calculate_perception_range(vehicle, line_set, perception_range):
+    current_transform = vehicle.get_transform()
+    x, y, z = current_transform.location.x, current_transform.location.y, current_transform.location.z
+
+    resolution = np.deg2rad(2)
+    rads = np.linspace(-np.pi, np.pi, int(np.pi / resolution))
+    points, lines = [], []
+    for i, rad in enumerate(rads):
+        point = [x + perception_range*np.cos(rad), y + perception_range*np.sin(rad), z]
+        points.append(point)
+        lines.append([i, (i+1)%len(rads)])
+    
+    points = np.array(points, dtype=np.float64)
+    lines = np.array(lines)
+
+    color = vehicle.attributes.get('color', '190,190,190')
+    color = np.array(eval(color)).astype(np.float64) / 255
+    colors = np.expand_dims(color, axis=0).repeat(len(lines), axis=0)
+
+    line_set.points = open3d.utility.Vector3dVector(points)
+    line_set.lines = open3d.utility.Vector2iVector(lines)
+    line_set.colors = open3d.utility.Vector3dVector(colors)
+    return line_set
+
 
 def get_fixed_boundary(color_open3d : np.ndarray):
     max_x, max_y = 80, 45
@@ -45,11 +69,11 @@ def get_fixed_boundary(color_open3d : np.ndarray):
     lines = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
 
     # color_open3d = np.ones((3,), dtype=np.float32)
-    color = np.expand_dims(color_open3d, axis=0).repeat(len(lines), axis=0)
+    colors = np.expand_dims(color_open3d, axis=0).repeat(len(lines), axis=0)
 
     line_set.points = open3d.utility.Vector3dVector(points)
     line_set.lines = open3d.utility.Vector2iVector(lines)
-    line_set.colors = open3d.utility.Vector3dVector(color)
+    line_set.colors = open3d.utility.Vector3dVector(colors)
     return line_set
 
 
@@ -62,6 +86,7 @@ class VehiclesVisualizer(object):
         self.client, self.world, self.town_map = connect_to_server(host, port, timeout)
         self.clock = Clock(10)
         self.max_vehicles = config.max_vehicles  ## max number
+        self.perception_range = config.get('perception_range', 50.0)
 
         self.window_name = "Vehicles Visualisation Example"
         self.vis = open3d.visualization.Visualizer()
@@ -79,10 +104,14 @@ class VehiclesVisualizer(object):
         params.extrinsic = HomogeneousMatrix.xyzrpy(self.view_pose)
         view_control.convert_from_pinhole_camera_parameters(params)
 
+        '''add geometry'''
         self.vis.add_geometry(get_fixed_boundary(self.background_color))
 
         self.bounding_boxs = [open3d.geometry.OrientedBoundingBox() for _ in range(self.max_vehicles)]
         [self.vis.add_geometry(bounding_box) for bounding_box in self.bounding_boxs]
+
+        self.ranges = [open3d.geometry.LineSet()]
+        [self.vis.add_geometry(i) for i in self.ranges]
 
 
     def run_step(self, vehicles):
@@ -99,6 +128,11 @@ class VehiclesVisualizer(object):
             bounding_box.z_axis = new_bounding_box.z_axis
         
         for i in range(number_min, number_max): self.bounding_boxs[i].clear()
+
+        ## TODO multi_agent
+        for vehicle in vehicles:
+            if vehicle.attributes['color'] != '190,190,190':
+                calculate_perception_range(vehicle, self.ranges[0], self.perception_range)
         
         self.vis.update_geometry()
         self.vis.poll_events()
@@ -131,7 +165,7 @@ if __name__ == "__main__":
     args = generate_args()
     config.update(args)
     
-    vehicles_visualizer = VehiclesVisualizer(config)
+    vehicles_visualizer = VehiclesVisualizer(config, )
     try:
         vehicles_visualizer.run()
     except KeyboardInterrupt:
