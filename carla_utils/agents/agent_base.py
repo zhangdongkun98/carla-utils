@@ -53,7 +53,7 @@ class BaseAgent(object):
         self.id = vehicle.id
 
         self.global_path, self.random_walk = global_path, False
-        if self.global_path is None: self.reset_route()
+        if self.global_path is None: self.reset_route()  ### disable currently
         elif self.debug: self.global_path.draw(self.world, life_time=15)
         return
 
@@ -62,12 +62,14 @@ class BaseAgent(object):
         self.sensors_master.reset()
         self.global_path.reset()
 
+    ## disable currently
     def reset_route(self):
         self.random_walk = True
         route = get_reference_route(self.town_map, self.vehicle, self.distance_range, self.sampling_resolution)
         self.global_path = GlobalPath(None, None, route)
         if self.debug: self.global_path.draw(self.world, life_time=15)
     
+    ## disable currently
     def mode_random_walk(self): self.reset_route()
 
     def run_step(self, reference):

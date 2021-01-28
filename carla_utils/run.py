@@ -22,6 +22,12 @@ if __name__ == "__main__":
         action='store_true',
         dest='no_display',
         help='whether display')
+    argparser.add_argument(
+        '-p', '--port',
+        metavar='P',
+        default=2000,
+        type=int,
+        help='TCP port of CARLA Simulator (default: 2000)')
     args = argparser.parse_args()
 
     server_path = os.environ['CARLAPATH']
@@ -31,8 +37,10 @@ if __name__ == "__main__":
         cmd += ' -quality-level=Low'
     if args.opengl:
         cmd += ' -opengl'
+    if args.port:
+        assert args.port % 2 == 0
+        cmd += ' -carla-rpc-port=' + str(args.port)
     if args.no_display:
         cmd = 'DISPLAY= ' + cmd
-
     print('\nrunning:\n    '+cmd+'\n')
     os.system(cmd)

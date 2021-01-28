@@ -21,7 +21,6 @@ class AgentState(Enum):
 class NaiveAgent(BaseAgent):
     def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
         BaseAgent.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
-        # Agent.__init__(self, vehicle)
 
         self.leading_range = 15.0
         assert self.leading_range < self.distance_range
@@ -40,6 +39,8 @@ class NaiveAgent(BaseAgent):
         '''get leading agent'''
         current_transform = self.vehicle.get_transform()
         reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
+
+        ### disable currently
         if remaining_distance < self.leading_range:
             self.reset_route()
             reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
