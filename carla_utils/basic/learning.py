@@ -24,66 +24,34 @@ def create_dir(config, model_name):
     with open(join('results', dataset_name, 'comments'), mode='w', encoding='utf-8') as _: pass
     config.save(join('results', dataset_name))
 
-    logger = SummaryWriter(log_dir=log_path)
-    logger.add_text('description', dataset_name, 0)
+    logger = Writer(log_dir=log_path, comment=dataset_name)
     return PathPack(log_path, save_model_path, output_path), logger
 
 
+class Writer(SummaryWriter):
+    def __init__(self, **kwargs):
+        super(Writer, self).__init__(**kwargs)
 
-class nameddict(type):
-    '''
-        https://github.com/https://github.com/tonnydourado/nameddicttonnydourado/nameddict
-    '''
-    '''Metaclass (or class factory) for named dicts.
-    Returns a class with a customized constructor,
-    and dot-like access to dictionare items.
-    Arguments:
-    cls: implicit instance of the new class being generated.
-    name: New classe's name.
-    attrs: list of attributes for the new class.
-    '''
+        description = kwargs['comment']
+        self.add_text('description', description, 0)
 
-    def __new__(cls, name, attrs=[]):
-        def __getattribute__(self, name):
-            class_ = dict.__getattribute__(self, '__class__')
-            if name in super(class_, self).__getattribute__('keys')():
-                return super(class_, self).__getitem__(name)
-            else:
-                return super(class_, self).__getattribute__(name)
+        file_dir, file_name = os.path.split(self.file_writer.event_writer._ev_writer._file_name)
+        dir_name = file_name.split('tfevents.')[-1].split('.')[0] + '--log'
 
-        def __setattr__(self, name, value):
-            class_ = dict.__getattribute__(self, '__class__')
-            if name in super(class_, self).__getattribute__('keys')():
-                super(class_, self).__setitem__(name, value)
-            else:
-                super(class_, self).__setattr__(name, value)
-                super(class_, self).__setitem__(name, value)
+        self.data_dir = join(file_dir, dir_name)
+        os.makedirs(self.data_dir)
+    
+    
+    def add_scalar(self, *args):
+        super().add_scalar(*args)
 
-        def __repr__(self):
-            args = [
-                '{key}={value}'.format(key=key, value=value)
-                for key, value in self.items()
-            ]
-            args_str = '(' + u','.join(args) + ')'
-            return self.__class__.__name__ + args_str
+        tag, scalar_value, global_step = args[0], args[1], args[2]
 
-        dict_ = {
-            '__getattribute__': __getattribute__,
-            '__setattr__': __setattr__,
-            '__repr__': __repr__
-        }
-
-        tpl = '''def __init__(self,{}):\n
-                \tsuper(self.__class__,self).__init__()
-                \tfor key,value in {}.items():\n
-                \t\tsetattr(self,key,value)'''
-        formal_args = ','.join(attrs)
-        args_dict = 'dict(' + ','.join([i + '=' + i for i in attrs]) + ')'
-        exec(tpl.format(formal_args, args_dict) in dict_)
-
-        return super(nameddict, cls).__new__(cls, name, (dict,), dict_)
-
-    def __init__(cls, name, attrs=[]):
-        super(nameddict, cls).__init__(cls)
+        file_path = join(self.data_dir, tag+'.txt')
+        file_dir, _ = os.path.split(file_path)
+        os.makedirs(file_dir, exist_ok=True)
+        with open(file_path, mode='a') as f:
+            f.write(str(global_step) + ' ' + str(scalar_value) + '\n')
+        return
 
 

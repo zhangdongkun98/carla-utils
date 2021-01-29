@@ -33,13 +33,14 @@ if __name__ == "__main__":
     server_path = os.environ['CARLAPATH']
 
     cmd = 'bash ' + join(server_path, 'CarlaUE4.sh')
+
+    assert args.port % 2 == 0
+    cmd += ' -carla-rpc-port=' + str(args.port)
+
     if args.quality:
         cmd += ' -quality-level=Low'
     if args.opengl:
         cmd += ' -opengl'
-    if args.port:
-        assert args.port % 2 == 0
-        cmd += ' -carla-rpc-port=' + str(args.port)
     if args.no_display:
         cmd = 'DISPLAY= ' + cmd
     print('\nrunning:\n    '+cmd+'\n')

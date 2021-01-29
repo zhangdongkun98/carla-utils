@@ -22,3 +22,5 @@ from .resource_manager import ResourceManager
 from .clock import Clock
 
 from pprint import pprint
+
+from .nameddict import nameddict
