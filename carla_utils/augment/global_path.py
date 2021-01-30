@@ -26,14 +26,23 @@ class GlobalPath(object):
         self.frame_id = frame_id
         self.time_stamp = time_stamp
 
-        self.route = route
-        self.carla_waypoints = list(np.array(route)[:,0])
-        self.options = list(np.array(route)[:,1])
+        simplified_route = copy.copy(route)
+        delete_index_list = []
+        for i in range(len(route)-1):
+            loc_old, loc_new = route[i][0].transform.location, route[i+1][0].transform.location
+            if loc_old.distance(loc_new) < 0.021:
+                delete_index_list.append(i+1)
+        basic.list_del(simplified_route, delete_index_list)
+
+        self.route = simplified_route
+        self.carla_waypoints = list(np.array(simplified_route)[:,0])
+        self.options = list(np.array(simplified_route)[:,1])
         self._destination = self.carla_waypoints[-1].transform
 
         x = [i.transform.location.x for i in self.carla_waypoints]
         y = [i.transform.location.y for i in self.carla_waypoints]
         theta = [np.deg2rad(i.transform.rotation.yaw) for i in self.carla_waypoints]
+
         self.curvatures, self.distances = calc_curvature_with_yaw_diff(x, y, theta)
         self.sampling_resolution = np.average(self.distances)
 
@@ -43,6 +52,31 @@ class GlobalPath(object):
 
     def __len__(self):
         return len(self.route)
+    
+    def save_to_disk(self, file_path):
+        x = [i.transform.location.x for i in self.carla_waypoints]
+        y = [i.transform.location.y for i in self.carla_waypoints]
+        z = [i.transform.location.z for i in self.carla_waypoints]
+        option = [i.value for i in self.options]
+        arr = np.stack([x, y, z, option]).T
+        np.savetxt(file_path, arr, fmt='%.10f')
+        return
+    
+    @staticmethod
+    def read_from_disk(town_map, file_path):
+        print(file_path)
+        arr = np.loadtxt(file_path)
+        xs = arr[:,0]
+        ys = arr[:,1]
+        zs = arr[:,2]
+        options = arr[:,3]
+        route = []
+        for (x, y, z, option) in zip(xs, ys, zs, options):
+            location = carla.Location(x, y, z)
+            waypoint = town_map.get_waypoint(location)
+            route.append((waypoint, RoadOption(int(option))))
+        return GlobalPath(None, None, route)
+
 
     def reset(self):
         '''
@@ -50,6 +84,9 @@ class GlobalPath(object):
         '''
         self._max_coverage = 0
     
+    @property
+    def origin(self):
+        return self.carla_waypoints[0].transform
     @property
     def destination(self):
         return self._destination

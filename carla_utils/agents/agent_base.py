@@ -1,9 +1,8 @@
 import carla
 DestroyActor = carla.command.DestroyActor
 
-import time
-
 from .controller import Controller
+from .tools import calculate_direction
 from ..augment import GlobalPath, InnerConvert, vector3DNorm
 from ..world_map import get_reference_route, draw_arrow
 from ..sensor import CarlaSensorListMaster
@@ -25,7 +24,7 @@ class BaseAgent(object):
         """
         
         '''config, remind'''
-        self.max_velocity = config.get('max_velocity', 8.34)
+        self.max_velocity = float(config.get('max_velocity', 8.34))
         self.max_acceleration = config.get('max_acceleration', 5.0)
         self.min_acceleration = config.get('min_acceleration', -10.0)
         self.max_throttle = config.get('max_throttle', 1.0)
@@ -40,7 +39,7 @@ class BaseAgent(object):
         self.skip_num = self.control_frequency // self.decision_frequency
         assert self.control_frequency % self.decision_frequency == 0
 
-        self.distance_range = 100
+        self.distance_range = float(config.perception_range)
         self.sampling_resolution = 1
 
         self.clock = Clock(self.control_frequency)
@@ -53,8 +52,9 @@ class BaseAgent(object):
         self.id = vehicle.id
 
         self.global_path, self.random_walk = global_path, False
-        if self.global_path is None: self.reset_route()  ### disable currently
-        elif self.debug: self.global_path.draw(self.world, life_time=15)
+        if self.global_path is None: self.reset_route()
+        # elif self.debug: self.global_path.draw(self.world, life_time=15)
+        self.direction = calculate_direction(self.global_path.origin, self.global_path.destination)
         return
 
     def reset(self):
@@ -62,15 +62,15 @@ class BaseAgent(object):
         self.sensors_master.reset()
         self.global_path.reset()
 
-    ## disable currently
     def reset_route(self):
         self.random_walk = True
         route = get_reference_route(self.town_map, self.vehicle, self.distance_range, self.sampling_resolution)
         self.global_path = GlobalPath(None, None, route)
+        self.direction = calculate_direction(self.global_path.origin, self.global_path.destination)
         if self.debug: self.global_path.draw(self.world, life_time=15)
     
     ## disable currently
-    def mode_random_walk(self): self.reset_route()
+    # def mode_random_walk(self): self.reset_route()
 
     def run_step(self, reference):
         target_v = self.get_target_v(reference)
@@ -98,7 +98,7 @@ class BaseAgent(object):
 
     def get_control(self, target_v):
         if self.goal_reached(0.0):
-            if self.random_walk: self.reset_route(); #print('reset route!')
+            if self.random_walk: self.reset_route(); print('reset route!')
             # else: print('goal reached!')
 
         current_transform = self.get_transform()

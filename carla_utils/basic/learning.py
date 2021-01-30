@@ -14,6 +14,7 @@ def create_dir(config, model_name):
             config: need to contain:
                 config.description
     '''
+    if config.eval: model_name += '-eval'
     dataset_name = model_name + '/' + str(int(time.time())) + '----' + str(config.description)
     print('create dir: ', dataset_name)
     log_path = join('results', dataset_name, 'log')

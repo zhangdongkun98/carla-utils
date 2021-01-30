@@ -1,6 +1,6 @@
 
 from .tools import *
-from .tools import flatten_list
+from .tools import flatten_list, calculate_quadrant
 
 from .functions.spiral import QuadraticSpiral, ConstantSpiral
 from .functions import quintic as quintic

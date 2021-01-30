@@ -1,5 +1,8 @@
 
-from ..augment import error_transform
+import numpy as np
+
+from .. import basic
+from ..augment import error_transform, vectorYawRad
 
 
 def get_leading_agent_unsafe(agent, agents, reference_waypoints, max_distance):
@@ -36,3 +39,13 @@ def get_leading_agent_unsafe(agent, agents, reference_waypoints, max_distance):
                 break
         if leading_agent is not None: break
     return leading_agent, leading_distance
+
+
+def calculate_direction(start_transform, end_transform):
+    theta = basic.pi2pi(vectorYawRad(end_transform.location - start_transform.location) - np.deg2rad(start_transform.rotation.yaw))
+    threshold = np.deg2rad(10)
+    if abs(theta) < threshold: direction = 1
+    elif theta > threshold: direction = 0
+    else: direction = 2
+    return direction
+

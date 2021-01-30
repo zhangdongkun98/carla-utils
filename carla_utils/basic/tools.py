@@ -81,3 +81,27 @@ def flatten_list(input_list):
     output_list = []
     for i in input_list: output_list.extend(i)
     return output_list
+
+
+def calculate_quadrant(point):
+    """
+    
+    
+    Args:
+        point: contains attribute x, y
+    
+    Returns:
+        int
+    """
+
+    if point.x > 0 and point.y > 0:
+        quadrant = 1
+    elif point.x < 0 and point.y > 0:
+        quadrant = 2
+    elif point.x < 0 and point.y < 0:
+        quadrant = 3
+    elif point.x > 0 and point.y < 0:
+        quadrant = 4
+    else:
+        quadrant = 0
+    return quadrant
