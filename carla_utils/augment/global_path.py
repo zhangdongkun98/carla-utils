@@ -1,6 +1,5 @@
 import carla
 
-import time
 import numpy as np
 import copy
 import random
@@ -22,49 +21,53 @@ def calc_curvature_with_yaw_diff(x, y, yaw):
 
 
 class GlobalPath(object):
-    def __init__(self, frame_id, time_stamp, route):
+    def __init__(self, frame_id, time_stamp, route, **kwargs):
+        ### suggest that sampling_resolution <= 0.2
+
         self.frame_id = frame_id
         self.time_stamp = time_stamp
 
-        simplified_route = copy.copy(route)
-        delete_index_list = []
-        for i in range(len(route)-1):
-            loc_old, loc_new = route[i][0].transform.location, route[i+1][0].transform.location
-            if loc_old.distance(loc_new) < 0.021:
-                delete_index_list.append(i+1)
-        basic.list_del(simplified_route, delete_index_list)
+        self.route = copy.copy(route)
+        self._destination = self.route[-1][0].transform
 
-        self.route = simplified_route
-        self.carla_waypoints = list(np.array(simplified_route)[:,0])
-        self.options = list(np.array(simplified_route)[:,1])
-        self._destination = self.carla_waypoints[-1].transform
+        self.carla_waypoints = copy.copy(kwargs.get('carla_waypoints', None))
+        self.options = copy.copy(kwargs.get('options', None))
+        self.x = copy.copy(kwargs.get('x', None))
+        self.y = copy.copy(kwargs.get('y', None))
+        self.z = copy.copy(kwargs.get('z', None))
+        self.theta = copy.copy(kwargs.get('theta', None))
+        self.curvatures = copy.copy(kwargs.get('curvatures', None))
+        self.distances = copy.copy(kwargs.get('distances', None))
+        self.sampling_resolution = copy.copy(kwargs.get('sampling_resolution', None))
 
-        x = [i.transform.location.x for i in self.carla_waypoints]
-        y = [i.transform.location.y for i in self.carla_waypoints]
-        theta = [np.deg2rad(i.transform.rotation.yaw) for i in self.carla_waypoints]
+        if None in [self.x, self.y, self.theta]:
+            self.carla_waypoints, self.options = [], []
+            self.x, self.y, self.z, self.theta = [], [], [], []
+            for waypoint, option in route:
+                self.carla_waypoints.append(waypoint)
+                self.options.append(option)
+                self.x.append(waypoint.transform.location.x)
+                self.y.append(waypoint.transform.location.y)
+                self.z.append(waypoint.transform.location.z)
+                self.theta.append(np.deg2rad(waypoint.transform.rotation.yaw))
 
-        self.curvatures, self.distances = calc_curvature_with_yaw_diff(x, y, theta)
-        self.sampling_resolution = np.average(self.distances)
+            self.curvatures, self.distances = calc_curvature_with_yaw_diff(self.x, self.y, self.theta)
+            self.sampling_resolution = np.average(self.distances)
 
         self._max_coverage = 0
-        # assert self.sampling_resolution <= 0.2
 
 
     def __len__(self):
         return len(self.route)
     
     def save_to_disk(self, file_path):
-        x = [i.transform.location.x for i in self.carla_waypoints]
-        y = [i.transform.location.y for i in self.carla_waypoints]
-        z = [i.transform.location.z for i in self.carla_waypoints]
         option = [i.value for i in self.options]
-        arr = np.stack([x, y, z, option]).T
+        arr = np.stack([self.x, self.y, self.z, option]).T
         np.savetxt(file_path, arr, fmt='%.10f')
         return
     
     @staticmethod
     def read_from_disk(town_map, file_path):
-        print(file_path)
         arr = np.loadtxt(file_path)
         xs = arr[:,0]
         ys = arr[:,1]
@@ -75,8 +78,32 @@ class GlobalPath(object):
             location = carla.Location(x, y, z)
             waypoint = town_map.get_waypoint(location)
             route.append((waypoint, RoadOption(int(option))))
-        return GlobalPath(None, None, route)
+        
+        simplified_route = copy.copy(route)
+        delete_index_list = []
+        for i in range(len(route)-1):
+            loc_old, loc_new = route[i][0].transform.location, route[i+1][0].transform.location
+            if loc_old.distance(loc_new) < 0.025:
+                delete_index_list.append(i+1)
+        basic.list_del(simplified_route, delete_index_list)
 
+        return GlobalPath(None, None, simplified_route)
+    
+    def copy(self):
+        carla_waypoints = self.carla_waypoints
+        options = self.options
+        x, y, z = self.x, self.y, self.z
+        theta = self.theta
+        curvatures, distances = self.curvatures, self.distances
+        sampling_resolution = self.sampling_resolution
+
+        gp = GlobalPath(None, None, self.route,
+                carla_waypoints=carla_waypoints, options=options,
+                x=x, y=y, z=z, theta=theta,
+                curvatures=curvatures, distances=distances,
+                sampling_resolution=sampling_resolution,
+            )
+        return gp
 
     def reset(self):
         '''

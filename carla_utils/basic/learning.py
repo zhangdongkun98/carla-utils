@@ -14,7 +14,7 @@ def create_dir(config, model_name):
             config: need to contain:
                 config.description
     '''
-    if config.eval: model_name += '-eval'
+    if config.eval: model_name = '000-eval/' + model_name
     dataset_name = model_name + '/' + str(int(time.time())) + '----' + str(config.description)
     print('create dir: ', dataset_name)
     log_path = join('results', dataset_name, 'log')
@@ -46,13 +46,13 @@ class Writer(SummaryWriter):
     def add_scalar(self, *args):
         super().add_scalar(*args)
 
-        tag, scalar_value, global_step = args[0], args[1], args[2]
+        # tag, scalar_value, global_step = args[0], args[1], args[2]
 
-        file_path = join(self.data_dir, tag+'.txt')
-        file_dir, _ = os.path.split(file_path)
-        os.makedirs(file_dir, exist_ok=True)
-        with open(file_path, mode='a') as f:
-            f.write(str(global_step) + ' ' + str(scalar_value) + '\n')
-        return
+        # file_path = join(self.data_dir, tag+'.txt')
+        # file_dir, _ = os.path.split(file_path)
+        # os.makedirs(file_dir, exist_ok=True)
+        # with open(file_path, mode='a') as f:
+        #     f.write(str(global_step) + ' ' + str(scalar_value) + '\n')
+        # return
 
 

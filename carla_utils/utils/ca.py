@@ -32,7 +32,7 @@ if __name__ == "__main__":
     for actor in sensors: print(actor)
     for actor in vehicles: print(actor)
 
-    # import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
 
     for actor in sensors: actor.destroy()
     for actor in vehicles: actor.destroy()

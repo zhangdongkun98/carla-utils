@@ -91,7 +91,3 @@ class AgentListMaster(object):
         return collisions
 
         
-
-
-
-
