@@ -88,7 +88,7 @@ class VehiclesVisualizer(object):
         self.max_vehicles = config.max_vehicles  ## max number
         self.perception_range = config.get('perception_range', 50.0)
 
-        self.window_name = 'Vehicles Visualisation Example' + '   port: ' + str(port)
+        self.window_name = 'Vehicles Visualisation Example' + '   ' + host + ':' + str(port)
         self.vis = open3d.visualization.Visualizer()
         self.vis.create_window(window_name=self.window_name, width=1200, height=800, left=0, top=0)
         self.view_pose = [0, 0, 60, 0, 0, -np.pi/2] if view_pose is None else view_pose
