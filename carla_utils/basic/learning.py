@@ -3,7 +3,7 @@ import os
 from os.path import join
 import time
 from collections import namedtuple
-from tensorboardX import SummaryWriter
+from tensorboardX import SummaryWriter, GlobalSummaryWriter
 
 PathPack = namedtuple('PathPack', ('log_path', 'save_model_path', 'output_path'))
 
@@ -29,7 +29,7 @@ def create_dir(config, model_name):
     return PathPack(log_path, save_model_path, output_path), logger
 
 
-class Writer(SummaryWriter):
+class Writer(GlobalSummaryWriter):
     def __init__(self, **kwargs):
         super(Writer, self).__init__(**kwargs)
 
@@ -46,13 +46,15 @@ class Writer(SummaryWriter):
     def add_scalar(self, *args):
         super().add_scalar(*args)
 
-        # tag, scalar_value, global_step = args[0], args[1], args[2]
+        # with self.lock:
+        #     tag, scalar_value, global_step = args[0], args[1], args[2]
 
-        # file_path = join(self.data_dir, tag+'.txt')
-        # file_dir, _ = os.path.split(file_path)
-        # os.makedirs(file_dir, exist_ok=True)
-        # with open(file_path, mode='a') as f:
-        #     f.write(str(global_step) + ' ' + str(scalar_value) + '\n')
-        # return
+        #     file_path = join(self.data_dir, tag+'.txt')
+        #     file_dir, _ = os.path.split(file_path)
+        #     os.makedirs(file_dir, exist_ok=True)
+        #     with open(file_path, mode='a') as f:
+        #         f.write(str(global_step) + ' ' + str(scalar_value) + '\n')
+
+        return
 
 
