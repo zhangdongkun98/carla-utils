@@ -115,7 +115,7 @@ class YamlConfig(object):
     # def set_path(self, path):
     #     self.path = path
     
-    def convert_to_dict(self):
+    def to_dict(self):
         block_words = self._get_block_words()
         result = dict()
         for attribute in dir(self):
@@ -123,12 +123,13 @@ class YamlConfig(object):
             if not attribute.startswith('_'):
                 value = getattr(self, attribute)
                 if isinstance(value, YamlConfig):
-                    result[attribute] = value.convert_to_dict()
+                    result[attribute] = value.to_dict()
                 else: result[attribute] = value
+        result['__file_path__'] = self._file_path
         return result
 
     def save(self, path):
-        config_dict = self.convert_to_dict()
+        config_dict = self.to_dict()
         with open(join(path, 'config.yaml'), 'w', encoding='utf-8') as f:
             yaml.dump(data=config_dict, stream=f, allow_unicode=True)
         return
