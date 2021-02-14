@@ -15,7 +15,7 @@ def create_dir(config, model_name):
                 config.description
     '''
     if config.eval: model_name = '000-eval/' + model_name
-    dataset_name = model_name + '/' + str(int(time.time())) + '----' + str(config.description)
+    dataset_name = model_name + '/' + config.method + '--' + str(int(time.time())) + '----' + str(config.description)
     print('create dir: ', dataset_name)
     log_path = join('results', dataset_name, 'log')
     save_model_path = join('results', dataset_name, 'saved_models')
@@ -25,11 +25,11 @@ def create_dir(config, model_name):
     with open(join('results', dataset_name, 'comments'), mode='w', encoding='utf-8') as _: pass
     config.save(join('results', dataset_name))
 
-    logger = Writer(log_dir=log_path, comment=dataset_name)
-    return PathPack(log_path, save_model_path, output_path), logger
+    writter = Writer(log_dir=log_path, comment=dataset_name)
+    return PathPack(log_path, save_model_path, output_path), writter
 
 
-class Writer(GlobalSummaryWriter):
+class Writer(SummaryWriter):
     def __init__(self, **kwargs):
         super(Writer, self).__init__(**kwargs)
 

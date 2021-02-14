@@ -1,7 +1,6 @@
 '''
     server_fps
 '''
-print(__doc__)
 
 import carla
 
@@ -44,6 +43,8 @@ class ServerFps(object):
 
 
 if __name__ == "__main__":
+    print(__doc__)
+
     import os
     from os.path import join
 

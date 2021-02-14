@@ -1,7 +1,6 @@
 '''
     clear_actors
 '''
-print(__doc__)
 
 import carla
 
@@ -11,6 +10,8 @@ from ..world_map import connect_to_server
 from .tools import generate_args
 
 if __name__ == "__main__":
+    print(__doc__)
+    
     import os
     from os.path import join
 

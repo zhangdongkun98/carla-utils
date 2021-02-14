@@ -133,6 +133,30 @@ class ActorVertices(object):
         vertices[2] += -l*dx - n*dy
         vertices[3] +=  l*dx - n*dy
         return vertices
+    
+    @staticmethod
+    def d2arrow(actor, expand=carla.Vector2D(0.0,0.0)):
+        if not hasattr(actor, 'bounding_box'): raise RuntimeError
+
+        t = actor.get_transform()
+        dx, dy = actor.bounding_box.extent.x +expand.x, actor.bounding_box.extent.y +expand.y
+        center_x, center_y, theta = t.location.x, t.location.y, np.deg2rad(t.rotation.yaw)
+
+        l, n = np.array([np.cos(theta), np.sin(theta)]), np.array([np.cos(theta+np.pi/2), np.sin(theta+np.pi/2)])
+        vertices = np.expand_dims(np.array([center_x, center_y]), axis=0).repeat(7, axis=0)
+
+        vertices[0] +=  l*dx + n*dy
+        vertices[1] += -l*dx + n*dy
+        vertices[2] += -l*dx - n*dy
+        vertices[3] +=  l*dx - n*dy
+
+        vertices[4] += l*dx
+        vertices[5] += 0.3*l*dx + n*dy
+        vertices[6] += 0.3*l*dx - n*dy
+
+        lines = np.array([[0,1], [1,2], [2,3], [3,0],  [4,5], [5,6], [6,4]])
+        return vertices, lines
+
 
 
 class CollisionCheck(object):
