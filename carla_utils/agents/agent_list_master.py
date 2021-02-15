@@ -3,6 +3,7 @@ ApplyVehicleControl = carla.command.ApplyVehicleControl
 ApplyTransform = carla.command.ApplyTransform
 
 from .agent_base import BaseAgent
+from .recorder import AgentsRecorder
 from ..system import Clock
 from ..augment import CollisionCheck
 from ..world_map import tick_world
@@ -31,6 +32,7 @@ class AgentListMaster(object):
         assert self.control_frequency % self.decision_frequency == 0
 
         self.clock = Clock(self.control_frequency)
+        self._recorder = AgentsRecorder()
 
         self.agents, self.agents_learnable = [], []
         self.run_step = self._run_step_pseudo if self.pseudo else self._run_step_real
@@ -53,6 +55,13 @@ class AgentListMaster(object):
         tick_world(self.world)
         self.agents, self.agents_learnable = [], []
     
+
+    def record(self, timestamp):
+        self._recorder.record(timestamp, self.agents)
+
+    def save_record(self, file_path):
+        self._recorder.save_to_disk(file_path)
+
 
     def _run_step_real(self, references):
         target_v_list = [agent.get_target_v(reference) for agent, reference in zip(self.agents, references)]

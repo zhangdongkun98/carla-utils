@@ -51,8 +51,8 @@ class VehiclesVisualizer(object):
     def __init__(self, config, view_pose=None):
         '''parameter'''
         self.config = config
-        host, port, timeout, _ = config.host, config.port, config.timeout, config.map_name
-        self.client, self.world, self.town_map = connect_to_server(host, port, timeout)
+        host, port, timeout, map_name = config.host, config.port, config.timeout, config.map_name
+        self.client, self.world, self.town_map = connect_to_server(host, port, timeout, map_name)
         self.clock = Clock(10)
         self.max_vehicles = config.max_vehicles  ## max number
 

@@ -11,3 +11,4 @@ from .agent_naive_pseudo import NaiveAgentPseudo
 
 from .agent_list_master import AgentListMaster
 
+from .recorder import AgentsRecorder

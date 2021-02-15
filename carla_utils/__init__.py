@@ -26,6 +26,7 @@ from .agents import AgentsRoutePlanner, Controller
 from .agents import BaseAgent, NaiveAgent, IDMAgent
 from .agents import BaseAgentPseudo, NaiveAgentPseudo
 from .agents import AgentListMaster
+from .agents import AgentsRecorder
 
 '''utils'''
 from .utils import PyGameInteraction, NPC
