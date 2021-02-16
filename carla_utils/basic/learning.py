@@ -41,20 +41,44 @@ class Writer(SummaryWriter):
 
         self.data_dir = join(file_dir, dir_name)
         os.makedirs(self.data_dir)
+
+        self.data_cache = dict()
     
     
+    def _clear_cache(self, tag):
+        self.data_cache[tag]['count'] = 0
+        self.data_cache[tag]['data'] = ''
+    
+    def _write_cache_to_disk(self, tag):
+        file_path = join(self.data_dir, tag+'.txt')
+        file_dir, _ = os.path.split(file_path)
+        os.makedirs(file_dir, exist_ok=True)
+        with open(file_path, mode='a') as f:
+            f.write(self.data_cache[tag]['data'])
+        
+        self._clear_cache(tag)
+
+
     def add_scalar(self, *args):
-        super().add_scalar(*args)
+        res = super().add_scalar(*args)
 
-        # with self.lock:
-        #     tag, scalar_value, global_step = args[0], args[1], args[2]
+        tag, scalar_value, global_step = args[0], args[1], args[2]
 
-        #     file_path = join(self.data_dir, tag+'.txt')
-        #     file_dir, _ = os.path.split(file_path)
-        #     os.makedirs(file_dir, exist_ok=True)
-        #     with open(file_path, mode='a') as f:
-        #         f.write(str(global_step) + ' ' + str(scalar_value) + '\n')
+        if tag not in self.data_cache:
+            self.data_cache[tag] = dict()
+            self._clear_cache(tag)
+        self.data_cache[tag]['count'] += 1
+        self.data_cache[tag]['data'] += str(global_step) + ' ' + str(scalar_value) + '\n'
+        
+        if self.data_cache[tag]['count'] % 300 == 0:
+            self._write_cache_to_disk(tag)
+        return res
 
-        return
 
+    def close(self):
+        res = super().close()
+
+        for tag in self.data_cache:
+            self._write_cache_to_disk(tag)
+        return res
 
