@@ -25,6 +25,7 @@ class AgentListMaster(object):
         self.client, self.world = client, world
 
         self.pseudo, self.fast = config.pseudo, config.fast
+        self.expand = carla.Vector2D(0.0,0.0)
 
         self.decision_frequency = config.decision_frequency
         self.control_frequency = config.control_frequency
@@ -94,7 +95,7 @@ class AgentListMaster(object):
             if collisions[i] == True: continue
             for j, other_agent in enumerate(self.agents):
                 if agent.id == other_agent.id: continue
-                if CollisionCheck.d2(agent.vehicle, other_agent.vehicle):
+                if CollisionCheck.d2(agent.vehicle, other_agent.vehicle, self.expand):
                     collisions[i] = True
                     collisions[j] = True
         return collisions

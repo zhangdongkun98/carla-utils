@@ -165,7 +165,7 @@ class CollisionCheck(object):
     """
     
     @staticmethod
-    def d2(actor1, actor2, expand=carla.Vector2D(0.05,0.05)):
+    def d2(actor1, actor2, expand=carla.Vector2D(0.0,0.0)):
         """
         
         
