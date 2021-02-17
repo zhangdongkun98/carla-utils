@@ -1,7 +1,7 @@
 import carla
 
 import numpy as np
-from typing import AnyStr, List
+from typing import AnyStr, List, Any
 import pickle
 from collections import namedtuple
 
@@ -12,7 +12,7 @@ class AgentsRecorder(object):
     def __init__(self):
         self.records = dict()
 
-    def record(self, timestamp : AnyStr, agents : List[BaseAgent]):
+    def record(self, timestamp: AnyStr, agents: List[BaseAgent], info: Any=None):
         """
         
         
@@ -32,7 +32,7 @@ class AgentsRecorder(object):
             bbx = agent.vehicle.bounding_box.extent
             x, y, z = bbx.x, bbx.y, bbx.z
             bbx = PicklableBoundingBox(x, y, z)
-            self.records[timestamp][agent_id] = PicklableAgent(id=agent_id, state=agent.get_state(), attributes=attributes, bounding_box=bbx)
+            self.records[timestamp][agent_id] = PicklableAgent(id=agent_id, state=agent.get_state(), attributes=attributes, bounding_box=bbx, info=info)
         return
 
 
@@ -51,14 +51,13 @@ class AgentsRecorder(object):
 
 
 
-PicklableAgent = namedtuple('PicklableAgent', ('id', 'state', 'attributes', 'bounding_box'))
-
 class PicklableAgent(object):
     def __init__(self, **kwargs):
         self.id = kwargs['id']
         self.state = kwargs['state']
         self.attributes = kwargs['attributes']
         self.bounding_box = kwargs['bounding_box']
+        self.info = kwargs['info']
     
     def get_transform(self):
         x, y, z = self.state.x, self.state.y, self.state.z
