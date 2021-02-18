@@ -42,7 +42,7 @@ class NaiveAgent(BaseAgent):
 
         ### disable currently
         if remaining_distance < self.leading_range:
-            self.reset_route()
+            self.extend_route()
             reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
 
         agent, _ = get_leading_agent_unsafe(self, agents, reference_waypoints, max_distance=self.leading_range)

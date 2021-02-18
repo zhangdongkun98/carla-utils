@@ -2,15 +2,14 @@ import carla
 DestroyActor = carla.command.DestroyActor
 
 from .controller import Controller
-from .tools import calculate_direction
 from ..augment import GlobalPath, InnerConvert, vector3DNorm
-from ..world_map import get_reference_route, draw_arrow
+from ..world_map import get_reference_route_wrt_waypoint, draw_arrow
 from ..sensor import CarlaSensorListMaster
 from ..system import Clock
 
 
 class BaseAgent(object):
-    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path: GlobalPath):
         """
         
         
@@ -47,30 +46,19 @@ class BaseAgent(object):
 
         '''vehicle'''
         self.world, self.town_map, self.vehicle = world, town_map, vehicle
-        self.sensors_master : CarlaSensorListMaster = sensors_master
+        self.sensors_master: CarlaSensorListMaster = sensors_master
+        self.global_path = global_path
 
         self.id = vehicle.id
-
-        self.global_path, self.random_walk = global_path, False
-        if self.global_path is None: self.reset_route()
-        # elif self.debug: self.global_path.draw(self.world, life_time=15)
-        self.direction = calculate_direction(self.global_path.origin, self.global_path.destination)
         return
 
-    def reset(self):
-        if self.random_walk: return
-        self.sensors_master.reset()
-        self.global_path.reset()
 
-    def reset_route(self):
-        self.random_walk = True
-        route = get_reference_route(self.town_map, self.vehicle, self.distance_range, self.sampling_resolution)
-        self.global_path = GlobalPath(None, None, route)
-        self.direction = calculate_direction(self.global_path.origin, self.global_path.destination)
-        if self.debug: self.global_path.draw(self.world, life_time=15)
-    
-    ## disable currently
-    # def mode_random_walk(self): self.reset_route()
+    def extend_route(self):
+        waypoint = self.global_path.carla_waypoints[-1]
+        sr = self.global_path.sampling_resolution
+        route = get_reference_route_wrt_waypoint(waypoint, sr, round(3*self.distance_range / sr))
+        self.global_path.extend(route[1:])
+
 
     def run_step(self, reference):
         target_v = self.get_target_v(reference)
@@ -97,9 +85,8 @@ class BaseAgent(object):
         return self.global_path.reached(preview_distance)
 
     def get_control(self, target_v):
-        if self.goal_reached(0.0):
-            if self.random_walk: self.reset_route(); print('reset route!')
-            # else: print('goal reached!')
+        if self.goal_reached(5.0):
+            self.extend_route(); #print('[BaseAgent] extend route!')
 
         current_transform = self.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)

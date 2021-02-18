@@ -21,11 +21,10 @@ def calc_curvature_with_yaw_diff(x, y, yaw):
 
 
 class GlobalPath(object):
-    def __init__(self, frame_id, time_stamp, route, **kwargs):
+    def __init__(self, frame_id, timestamp, route, **kwargs):
         ### suggest that sampling_resolution <= 0.2
 
-        self.frame_id = frame_id
-        self.time_stamp = time_stamp
+        self.frame_id, self.timestamp = frame_id, timestamp
 
         self.route = copy.copy(route)
         self._destination = self.route[-1][0].transform
@@ -104,13 +103,25 @@ class GlobalPath(object):
                 sampling_resolution=sampling_resolution,
             )
         return gp
-
-    def reset(self):
-        '''
-            Reset self._max_coverage to 0, since self._max_coverage aims to eliminate back-and-forth.
-        '''
-        self._max_coverage = 0
     
+
+    def extend(self, route):
+        self.route.extend(copy.copy(route))
+        self._destination = self.route[-1][0].transform
+
+        for waypoint, option in route:
+            self.carla_waypoints.append(waypoint)
+            self.options.append(option)
+            self.x.append(waypoint.transform.location.x)
+            self.y.append(waypoint.transform.location.y)
+            self.z.append(waypoint.transform.location.z)
+            self.theta.append(np.deg2rad(waypoint.transform.rotation.yaw))
+
+        self.curvatures, self.distances = calc_curvature_with_yaw_diff(self.x, self.y, self.theta)
+        self.sampling_resolution = np.average(self.distances)
+        return
+
+
     @property
     def origin(self):
         return self.carla_waypoints[0].transform
@@ -132,18 +143,6 @@ class GlobalPath(object):
             world.debug.draw_point(waypoint.transform.location, size=size, color=carla.Color(*color), life_time=life_time)
         return
 
-
-    def truncate(self, current_state, max_step):
-        '''
-            Args:
-                current_state: any instance that contains attribute x, y, z
-        '''
-        raise NotImplementedError
-        self._step_target(current_state, max_step)
-        start, end = self.min_target, self.min_target+max_step
-        reference_route = copy.copy(self.route[start:end])
-        return reference_route
-    
 
     def next_waypoint(self, current_transform, distance):
         '''
@@ -204,18 +203,3 @@ class GlobalPath(object):
                 break
         self._max_coverage = index
 
-
-    def _calc_nearest_index(self, current_state, reference_waypoints):
-        raise NotImplementedError
-        ind, mind = -1, float('inf')
-        x, y, z = current_state.x, current_state.y, current_state.z
-        for index, waypoint in enumerate(reference_waypoints):
-            dx, dy = x - waypoint.transform.location.x, y - waypoint.transform.location.y
-            dz = z - waypoint.transform.location.z
-            d = dx**2 + dy**2 + dz**2
-            if d < mind:
-                mind = d
-                ind = index
-        return ind, np.sqrt(mind)
-
-    

@@ -50,7 +50,7 @@ class IDMAgent(BaseAgent):
         current_transform = self.vehicle.get_transform()
         reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
         if remaining_distance < self.leading_range:
-            self.reset_route()
+            self.extend_route()
             reference_waypoints, remaining_distance = self.global_path.remaining_waypoints(current_transform)
 
         agent, distance = get_leading_agent_unsafe(self, agents, reference_waypoints, max_distance=self.leading_range)

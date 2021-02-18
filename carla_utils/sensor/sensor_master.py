@@ -70,9 +70,9 @@ class CarlaSensorListMaster(object):
         if sensor_master.type_id == 'sensor.camera.rgb':
             self.camera_rgb_list.append(sensor_master)
 
-
-    def reset(self):
-        [sensor_master.reset() for sensor_master in self.sensor_dict.values()]
+    # ## disable currently
+    # def reset(self):
+    #     [sensor_master.reset() for sensor_master in self.sensor_dict.values()]
 
     def get_camera(self):
         sensor_master = None
@@ -160,11 +160,11 @@ class CarlaSensorMaster(object):
 
         return
 
-
-    def reset(self):
-        if self.sensor.is_listening: self.sensor.stop()
-        self.raw_data, self.data = None, None
-        self.sensor.listen(self.callback)
+    # ## disable currently
+    # def reset(self):
+    #     if self.sensor.is_listening: self.sensor.stop()
+    #     self.raw_data, self.data = None, None
+    #     self.sensor.listen(self.callback)
 
 
     def get_transform(self):
