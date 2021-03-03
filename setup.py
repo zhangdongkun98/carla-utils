@@ -11,7 +11,7 @@ setup(
     install_requires=[
         'numpy',
         'scipy',
-        'matplotlib',
+        'matplotlib', 'seaborn',
         'networkx',
         'pygame==1.9.6',
         'PyYAML',

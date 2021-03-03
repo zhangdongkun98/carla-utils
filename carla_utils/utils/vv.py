@@ -6,6 +6,9 @@ import carla
 
 import numpy as np
 import open3d
+import open3d
+import os
+import glob
 
 from ..system import Clock, parse_yaml_file_unsafe
 from ..basic import HomogeneousMatrix
@@ -47,6 +50,83 @@ def get_fixed_boundary(color_open3d : np.ndarray):
 
 
 
+def calculate_perception_range(vehicle, line_set, perception_range):
+    current_transform = vehicle.get_transform()
+    x, y, z = current_transform.location.x, current_transform.location.y, current_transform.location.z
+
+    resolution = np.deg2rad(2)
+    rads = np.linspace(-np.pi, np.pi, int(np.pi / resolution))
+    points, lines = [], []
+    for i, rad in enumerate(rads):
+        point = [x + perception_range*np.cos(rad), y + perception_range*np.sin(rad), z]
+        points.append(point)
+        lines.append([i, (i+1)%len(rads)])
+    
+    points = np.array(points, dtype=np.float64)
+    lines = np.array(lines)
+
+    color = vehicle.attributes.get('color', '190,190,190')
+    color = np.array(eval(color)).astype(np.float64) / 255
+    colors = np.expand_dims(color, axis=0).repeat(len(lines), axis=0)
+
+    line_set.points = open3d.utility.Vector3dVector(points)
+    line_set.lines = open3d.utility.Vector2iVector(lines)
+    line_set.colors = open3d.utility.Vector3dVector(colors)
+    return line_set
+
+
+def get_road_geometry_center(global_paths):
+    color = np.array([100, 100, 100], np.float64) / 255
+
+    line_sets = []
+    for global_path in global_paths:
+        centers = np.stack([global_path.x, global_path.y]).T
+        lines = np.vstack([np.arange(0, len(global_path)-1), np.arange(1, len(global_path))]).T
+        colors = np.expand_dims(color, axis=0).repeat(len(lines), axis=0)
+
+        line_set = open3d.geometry.LineSet()
+        line_set.points = open3d.utility.Vector3dVector(np.hstack((centers, np.zeros((len(global_path),1)))))
+        line_set.lines = open3d.utility.Vector2iVector(lines)
+        line_set.colors = open3d.utility.Vector3dVector(colors)
+        line_sets.append(line_set)
+    return line_sets
+
+def get_road_geometry_side(town_map):
+    color = np.array([150, 150, 150], np.float64) / 255
+
+    files = glob.glob(os.path.split(os.path.abspath(__file__))[0] + '/../utils/global_path/*')
+    global_paths = [cu.GlobalPath.read_from_disk(town_map, i) for i in files]
+
+    line_sets = []
+    for global_path in global_paths:
+        lane_widths = np.array([w.lane_width for w in global_path.carla_waypoints]).reshape(len(global_path),1)
+        thetas = np.array(global_path.theta).reshape(len(global_path),1)
+        directions =  np.hstack([np.cos(thetas + np.pi/2), np.sin(thetas + np.pi/2)])
+        centers = np.stack([global_path.x, global_path.y]).T
+        lines = np.vstack([np.arange(0, len(global_path)-1), np.arange(1, len(global_path))]).T
+        colors = np.expand_dims(color, axis=0).repeat(len(lines), axis=0)
+
+        ### left
+        line_set = open3d.geometry.LineSet()
+        left = centers + lane_widths/2 * directions
+        
+        line_set.points = open3d.utility.Vector3dVector(np.hstack((left, np.zeros((len(global_path),1)))))
+        line_set.lines = open3d.utility.Vector2iVector(lines)
+        line_set.colors = open3d.utility.Vector3dVector(colors)
+        line_sets.append(line_set)
+
+        ### right
+        line_set = open3d.geometry.LineSet()
+        right = centers - lane_widths/2 * directions
+        
+        line_set.points = open3d.utility.Vector3dVector(np.hstack((right, np.zeros((len(global_path),1)))))
+        line_set.lines = open3d.utility.Vector2iVector(lines)
+        line_set.colors = open3d.utility.Vector3dVector(colors)
+        line_sets.append(line_set)
+    return line_sets
+
+
+
 class VehiclesVisualizer(object):
     def __init__(self, config, view_pose=None):
         '''parameter'''
@@ -58,7 +138,7 @@ class VehiclesVisualizer(object):
 
         self.window_name = 'Vehicles Visualisation Example' + '   ' + host + ':' + str(port)
         self.vis = open3d.visualization.Visualizer()
-        self.vis.create_window(window_name=self.window_name, width=1600, height=1600, left=0, top=0)
+        self.vis.create_window(window_name=self.window_name, width=1000, height=1000, left=0, top=0)
         self.view_pose = [0, 0, 60, 0, 0, -np.pi/2] if view_pose is None else view_pose
 
         render_option = self.vis.get_render_option()

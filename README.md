@@ -2,9 +2,18 @@
 
 # carla-utils
 
-For CARLA 0.9.9.4 and python 3.7
+## 0. Requirements
+```
+- CARLA 0.9.9.4, python 3.7
+- pytorch
+- (optional) ROS
+```
 
-## setup
+## 1. setup
+
+```bash
+echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc
+```
 
 ```bash
 pip install carla-utils
@@ -17,6 +26,18 @@ cd carla-utils
 pip install -e .
 ```
 
+## 2. Usage
+
+```bash
+cd /your/path/to/carla
+./CarlaUE4.sh
+cd PythonAPI/util/ && ./config.py
+
+<==>
+
+python -m carla_utils.run
+python -m carla_utils.config
+```
 
 ## others
 	config/sensor:
@@ -38,3 +59,4 @@ pip install -e .
 	- utils   # contains class easy to use
 	
 	- benchmark ?
+	- ros

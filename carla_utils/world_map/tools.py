@@ -1,10 +1,8 @@
 
 import carla
-SpawnActor = carla.command.SpawnActor
 
 import numpy as np
 import random
-import time
 import os, glob
 from os.path import join
 
@@ -45,25 +43,6 @@ def set_weather(world, weather):
     return weather
 
 
-def create_blueprint(world, type_id, **attributes):
-    blueprint_lib = world.get_blueprint_library()
-    bp = random.choice(blueprint_lib.filter(type_id))
-
-    role_name = attributes.get('role_name', 'hero')
-    bp.set_attribute('role_name', role_name)
-
-    if bp.has_attribute('color'):
-        color = attributes.get('color', (255,255,255))
-        color = str(color[0]) + ',' + str(color[1]) + ',' + str(color[2])
-        bp.set_attribute('color', color)
-    if bp.has_attribute('driver_id'):
-        driver_id = random.choice(bp.get_attribute('driver_id').recommended_values)
-        bp.set_attribute('driver_id', driver_id)
-    if bp.has_attribute('is_invincible'):
-        bp.set_attribute('is_invincible', 'true')
-    
-    return bp
-
 def get_spawn_transform(town_map, spawn_point, height=0.1):
     '''
         only use x,y of spawn_point
@@ -73,77 +52,6 @@ def get_spawn_transform(town_map, spawn_point, height=0.1):
     spawn_transform.location.z += height
     return spawn_transform
 
-
-def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer', **attributes):
-    """
-    
-    
-    Args:
-        attributes: contains role_name, color
-    
-    Returns:
-        carla.Vehicle
-    """
-    
-    bp = create_blueprint(world, type_id, **attributes)
-
-    spawn_transforms = town_map.get_spawn_points()
-    spawn_transform = random.choice(spawn_transforms) if spawn_transforms else carla.Transform()
-    vehicle = world.try_spawn_actor(bp, spawn_transform)
-    while vehicle is None:
-        spawn_transform = random.choice(spawn_transforms) if spawn_transforms else carla.Transform()
-        vehicle = world.try_spawn_actor(bp, spawn_transform)
-    if spawn_point:
-        spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.2)
-        vehicle.set_transform(spawn_transform)
-    # world.tick() # TODO check
-    tick_world(world)
-    print('spawn_point: x={}, y={}'.format(vehicle.get_location().x, vehicle.get_location().y))
-    return vehicle
-
-
-def add_vehicles(client, world, town_map, enable_physics, spawn_points, type_ids, **attributes):
-    """
-    
-    
-    Args:
-        attributes: contains role_names, colors
-    
-    Returns:
-        list of carla.Vehicle
-    """
-    number = len(spawn_points)
-    role_names = attributes.get('role_names', ['hero']*number)
-    colors = attributes.get('colors', [(255,255,255)]*number)
-    bps = [create_blueprint(world, type_ids[i], role_name=role_names[i], color=colors[i]) for i in range(number)]
-    batch = []
-    for bp, spawn_point in zip(bps, spawn_points):
-        spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.1)
-        batch.append(SpawnActor(bp, spawn_transform))
-    
-    actor_ids = []
-    for response in client.apply_batch_sync(batch):
-        if response.error: raise RuntimeError('spawn sensor failed: ' + response.error)
-        else: actor_ids.append(response.actor_id)
-    vehicles = world.get_actors(actor_ids)
-    for vehicle in vehicles: vehicle.set_simulate_physics(enable_physics)
-    tick_world(world)
-    return vehicles
-
-
-
-def get_actor(world, type_id, role_name):
-    '''not suitable for multi-agent'''
-    actor_list = world.get_actors()
-    for actor in actor_list:
-        if actor.type_id == type_id and actor.attributes['role_name'] == role_name:
-            return actor
-    return None
-
-def get_attached_actor(actor_list, actor):
-    for target_actor in actor_list:
-        print(target_actor.id, target_actor.parent)
-    print()
 
 
 def remove_traffic_light(vehicle):
@@ -227,44 +135,5 @@ def get_spawn_points(town_map, number):
     for sample_point in sample_points:
         spawn_points.append(carla.Location(x=sample_point[0], y=sample_point[1], z=sample_point[2]))
     return spawn_points
-
-
-
-from ..augment import error_transform
-
-def get_leading_vehicle_unsafe(vehicle, vehicles, reference_waypoints, max_distance):
-    """
-        Get leading vehicle wrt reference_waypoints or global_path.
-        !warning: distances between reference_waypoints cannot exceed any vehicle length.
-    
-    Args:
-        reference_waypoints: list of carla.Waypoint
-    
-    Returns:
-        
-    """
-    
-    current_location = vehicle.get_location()
-    vehicle_id = vehicle.id
-    vehicle_half_height = vehicle.bounding_box.extent.z
-    func = lambda loc: loc.distance(current_location)
-    obstacles = [(func(o.get_location()), o) for o in vehicles if o.id != vehicle_id and func(o.get_location()) <= 1.001*max_distance]
-    sorted_obstacles = sorted(obstacles, key=lambda x:x[0])
-
-    leading_vehicle, leading_distance = None, 0.0
-    for i, waypoint in enumerate(reference_waypoints):
-        if i > 0: leading_distance += waypoint.transform.location.distance(reference_waypoints[i-1].transform.location)
-        if leading_distance > 1.001*max_distance: break
-        location = waypoint.transform.location
-        location.z += vehicle_half_height
-        for _, obstacle in sorted_obstacles:
-            obstacle_transform = obstacle.get_transform()
-            if obstacle.bounding_box.contains(location, obstacle_transform):
-                leading_vehicle = obstacle
-                longitudinal_e, _, _ = error_transform(obstacle_transform, waypoint.transform)
-                leading_distance += longitudinal_e
-                break
-        if leading_vehicle is not None: break
-    return leading_vehicle, leading_distance
 
 

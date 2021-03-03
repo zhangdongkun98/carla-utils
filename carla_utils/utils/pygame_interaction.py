@@ -468,7 +468,7 @@ class FadingText(object):
 
 
 class PyGameInteraction(object):
-    def __init__(self, client, vehicle, sensors_master, config):
+    def __init__(self, config, client, vehicle, sensors_master):
         '''
             Args:
             config: need to contain:
@@ -478,6 +478,7 @@ class PyGameInteraction(object):
         '''
         width, height = config.get('width', 1000), config.get('height', 600)
         self.use_kb_control = config.get('use_kb_control', True)
+        print(__doc__)
         
         pygame.init()
         pygame.font.init()

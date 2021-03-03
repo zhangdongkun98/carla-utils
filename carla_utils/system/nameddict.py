@@ -49,7 +49,8 @@ class nameddict(type):
                 \t\tsetattr(self,key,value)'''
         formal_args = ','.join(attrs)
         args_dict = 'dict(' + ','.join([i + '=' + i for i in attrs]) + ')'
-        exec(tpl.format(formal_args, args_dict) in dict_)
+
+        exec(tpl.format(formal_args, args_dict), dict_)
 
         return super(nameddict, cls).__new__(cls, name, (dict,), dict_)
 

@@ -1,0 +1,104 @@
+import rospy
+
+import numpy as np
+
+from std_msgs.msg import ColorRGBA
+from visualization_msgs.msg import Marker, MarkerArray
+from tf2_msgs.msg import TFMessage
+
+from ..world_map import Role, vehicle_frame_id
+from . import convert
+
+
+def GlobalRoute(frame_id, timestamp, waypoints):
+    color = ColorRGBA(0.5, 0.5, 1.0, 1.0)
+
+    route = Marker()
+    route.header = convert.header(frame_id, timestamp)
+    route.ns = 'waypoints'
+    route.id = 0
+    route.type = Marker.SPHERE_LIST
+    route.action = Marker.ADD
+    route.lifetime = rospy.Duration(0.0)
+    route.frame_locked = False
+    route.pose.orientation.w = 1.0
+    route.scale.x = 1.0
+    route.scale.y = 1.0
+    route.scale.z = 1.0
+    route.color = color
+
+    route.points = [convert.CarlaWaypointToGeoPoint(wp) for wp in waypoints]
+    route.colors = [color] * len(route.points)
+    return route
+
+
+def Junctions(frame_id, timestamp, waypoint_pairs):
+    color = ColorRGBA(1.0, 1.0, 0.3, 1.0)
+
+    waypoint_ids = []
+    waypoints = []
+    for wp_pair in waypoint_pairs:
+        for wp in wp_pair:
+            if wp.id not in waypoint_ids:
+                waypoint_ids.append(wp.id)
+                waypoints.append(wp)
+
+    junctions = Marker()
+    junctions.header = convert.header(frame_id, timestamp)
+    junctions.ns = 'junctions'
+    junctions.id = 0
+    junctions.type = Marker.SPHERE_LIST
+    junctions.action = Marker.ADD
+    junctions.lifetime = rospy.Duration(0.0)
+    junctions.frame_locked = False
+    junctions.pose.orientation.w = 1.0
+    junctions.scale.x = 2.0
+    junctions.scale.y = 2.0
+    junctions.scale.z = 2.0
+    junctions.color = color
+
+    junctions.points = [convert.CarlaWaypointToGeoPoint(wp) for wp in waypoints]
+    junctions.colors = [color] * len(junctions.points)
+    return junctions
+
+
+def Map(frame_id, timestamp, town_map):
+    map = MarkerArray()
+    map.markers.append( GlobalRoute(frame_id, timestamp, town_map.generate_waypoints(0.1)) )
+    map.markers.append( Junctions(frame_id, timestamp, town_map.get_topology()) )
+    return map
+
+
+
+def VehicleTransform(frame_id, timestamp, vehicle):
+    child_frame_id = vehicle_frame_id(vehicle)
+    return convert.CarlaTransformToGeoTransformStamped(frame_id, timestamp, child_frame_id, vehicle.get_transform())
+
+def VehiclesTransform(frame_id, timestamp, vehicles):
+    tfmsg = TFMessage()
+    tfmsg.transforms = [VehicleTransform(frame_id, timestamp, v) for v in vehicles]
+    return tfmsg
+
+
+def BoundingBox(frame_id, timestamp, vehicle):
+    bbx = vehicle.bounding_box.extent
+    color = vehicle.attributes.get('color', '190,190,190')
+    color = np.array(eval(color)).astype(np.float64) / 255
+
+    marker = Marker()
+    marker.header = convert.header(frame_id, timestamp)
+    marker.header.frame_id = vehicle_frame_id(vehicle)
+    marker.id = 0
+    marker.type = Marker.CUBE
+    marker.action = Marker.ADD
+    marker.pose.orientation.w = 1.0
+    marker.scale.x = bbx.x * 2
+    marker.scale.y = bbx.y * 2
+    marker.scale.z = bbx.z * 2
+    marker.color = ColorRGBA(*color, 1.0)
+    return marker
+    
+def BoundingBoxes(frame_id, timestamp, vehicles):
+    marker_array = MarkerArray()
+    marker_array.markers = [BoundingBox(frame_id, timestamp, v) for v in vehicles]
+    return marker_array
