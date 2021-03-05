@@ -7,20 +7,21 @@ from ..augment import error_state
 
 
 class Controller(object):
-    def __init__(self, config, frequency):
+    def __init__(self, config, dt, wheelbase):
         '''parameter'''
-        wheelbase = config.get('wheelbase', 2.875)
-        max_t = config.get('max_throttle', 1.0)
-        max_b = config.get('max_brake', 1.0)
-        max_steer = config.get('max_steer', 1.0)
+        self.max_acceleration = config.get('max_acceleration', 5.0)
+        self.min_acceleration = config.get('min_acceleration', -10.0)
+        self.max_throttle = config.get('max_throttle', 1.0)
+        self.max_brake = config.get('max_brake', 1.0)
+        self.max_steer = config.get('max_steer', 1.0)
 
         Kp, Ki, Kd = 1.00, 0.01, 0.05
         self.v_param = (Kp, Ki, Kd)
         k_theta, k_e = 0.2, 0.05
         self.w_param = (k_theta, k_e)
 
-        self.v_controller = PID(1.0/frequency, -max_b, max_t)
-        self.w_controller = RWPF(wheelbase, max_steer)
+        self.v_controller = PID(dt, -self.max_brake, self.max_throttle)
+        self.w_controller = RWPF(wheelbase, self.max_steer)
 
 
     def run_step(self, current_state, target_state):
@@ -28,9 +29,20 @@ class Controller(object):
         throttle, brake = self.v_controller.run_step(current_state, target_state, self.v_param)
         steer = self.w_controller.run_step(current_state, target_state, self.w_param)
         return carla.VehicleControl(throttle=throttle, brake=brake, steer=steer)
+    
+    def control_to_acceleration(self, control: carla.VehicleControl):
+        throttle, brake = control.throttle, control.brake
+        if throttle == 0 and brake == 0: acceleration = 0
+        elif throttle > 0 and brake == 0: acceleration = throttle * self.max_acceleration / self.max_throttle
+        elif throttle == 0 and brake > 0: acceleration = brake * self.min_acceleration / self.max_brake
+        else: raise NotImplementedError
+        return acceleration
 
 
 
+# ==============================================================================
+# -- longitudinal --------------------------------------------------------------
+# ==============================================================================
 class PID(object):
     def __init__(self, dt, min_a, max_a):
         self.dt = dt
@@ -60,6 +72,9 @@ class PID(object):
         return throttle, brake
 
 
+# ==============================================================================
+# -- lateral -------------------------------------------------------------------
+# ==============================================================================
 class RWPF(object):
     """
         Paper: A Survey of Motion Planning and Control Techniques for Self-driving Urban Vehicles
@@ -83,3 +98,7 @@ class RWPF(object):
         curvature = c1 + c2 + c3
         steer = np.arctan(curvature * self.wheelbase)
         return steer
+
+
+
+

@@ -1,6 +1,8 @@
+import carla
 import rospy
 
 import numpy as np
+from typing import List
 
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
@@ -70,17 +72,35 @@ def Map(frame_id, timestamp, town_map):
 
 
 
-def VehicleTransform(frame_id, timestamp, vehicle):
+def VehicleTransform(frame_id, timestamp, vehicle: carla.Vehicle):
     child_frame_id = vehicle_frame_id(vehicle)
     return convert.CarlaTransformToGeoTransformStamped(frame_id, timestamp, child_frame_id, vehicle.get_transform())
 
-def VehiclesTransform(frame_id, timestamp, vehicles):
+def VehiclesTransform(frame_id, timestamp, vehicles: List[carla.Vehicle]):
     tfmsg = TFMessage()
     tfmsg.transforms = [VehicleTransform(frame_id, timestamp, v) for v in vehicles]
     return tfmsg
 
 
-def BoundingBox(frame_id, timestamp, vehicle):
+def StaticVehiclesTransform(frame_id, timestamp, static_vehicles):
+    """
+        Note: if carla runs in synchronous mode, then needs world.tick() after this method.
+    
+    Args:
+        static_vehicles: List[carla.EnvironmentObject]
+
+    Returns:
+        
+    """
+
+    tfmsg = TFMessage()
+    for v in static_vehicles:
+        child_frame_id = v.name + '_' + str(v.id)
+        tfmsg.transforms.append(convert.CarlaTransformToGeoTransformStamped(frame_id, timestamp, child_frame_id, v.transform))
+    return tfmsg
+
+
+def BoundingBox(frame_id, timestamp, vehicle, vi):
     bbx = vehicle.bounding_box.extent
     color = vehicle.attributes.get('color', '190,190,190')
     color = np.array(eval(color)).astype(np.float64) / 255
@@ -88,7 +108,7 @@ def BoundingBox(frame_id, timestamp, vehicle):
     marker = Marker()
     marker.header = convert.header(frame_id, timestamp)
     marker.header.frame_id = vehicle_frame_id(vehicle)
-    marker.id = 0
+    marker.id = vi
     marker.type = Marker.CUBE
     marker.action = Marker.ADD
     marker.pose.orientation.w = 1.0
@@ -100,5 +120,30 @@ def BoundingBox(frame_id, timestamp, vehicle):
     
 def BoundingBoxes(frame_id, timestamp, vehicles):
     marker_array = MarkerArray()
-    marker_array.markers = [BoundingBox(frame_id, timestamp, v) for v in vehicles]
+    marker_array.markers = [BoundingBox(frame_id, timestamp, v, vi) for vi, v in enumerate(vehicles)]
     return marker_array
+
+
+def StaticBoundingBox(frame_id, timestamp, static_vehicle, vi):
+    bbx = static_vehicle.bounding_box.extent
+    color = np.array(eval('100,100,100')).astype(np.float64) / 255
+
+    marker = Marker()
+    marker.header = convert.header(frame_id, timestamp)
+    marker.header.frame_id = static_vehicle.name + '_' + str(static_vehicle.id)
+    marker.id = vi
+    marker.type = Marker.CUBE
+    marker.action = Marker.ADD
+    marker.pose.orientation.w = 1.0
+    marker.scale.x = bbx.x * 2
+    marker.scale.y = bbx.y * 2
+    marker.scale.z = bbx.z * 2
+    marker.color = ColorRGBA(*color, 1.0)
+    return marker
+
+def StaticBoundingBoxes(frame_id, timestamp, static_vehicles):
+    marker_array = MarkerArray()
+    start = 10000
+    marker_array.markers = [StaticBoundingBox(frame_id, timestamp, v, vi+start) for vi, v in enumerate(static_vehicles)]
+    return marker_array
+

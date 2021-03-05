@@ -1,14 +1,13 @@
 import carla
-DestroyActor = carla.command.DestroyActor
 
-from .controller import Controller
+import numpy as np
+
 from ..augment import GlobalPath, InnerConvert, vector3DNorm
-from ..world_map import get_reference_route_wrt_waypoint, draw_arrow
-from ..sensor import CarlaSensorListMaster
-from ..system import Clock
+from .agent_abc import AgentABC
+from .vehicle_model import RealModel, BicycleModel2D
 
 
-class BaseAgent(object):
+class BaseAgent(AgentABC):
     def __init__(self, config, world, town_map, vehicle, sensors_master, global_path: GlobalPath):
         """
         
@@ -21,55 +20,17 @@ class BaseAgent(object):
         Returns:
             None
         """
-        
-        '''config, remind'''
-        self.max_velocity = float(config.get('max_velocity', 8.34))
-        self.max_acceleration = config.get('max_acceleration', 5.0)
-        self.min_acceleration = config.get('min_acceleration', -10.0)
-        self.max_throttle = config.get('max_throttle', 1.0)
-        self.max_brake = config.get('max_brake', 1.0)
-        self.max_steer = config.get('max_steer', 1.0)
 
-        self.debug = config.get('debug', False)
+        super(BaseAgent, self).__init__(config, world, town_map, vehicle, sensors_master, global_path)
+
         self.pseudo = False
 
-        self.decision_frequency = config.decision_frequency
-        self.control_frequency = config.control_frequency
-        self.skip_num = self.control_frequency // self.decision_frequency
-        assert self.control_frequency % self.decision_frequency == 0
-
-        self.distance_range = float(config.perception_range)
-        self.sampling_resolution = 1
-
-        self.clock = Clock(self.control_frequency)
-        self.controller = Controller(config, self.control_frequency)
-
-        '''vehicle'''
-        self.world, self.town_map, self.vehicle = world, town_map, vehicle
-        self.sensors_master: CarlaSensorListMaster = sensors_master
-        self.global_path = global_path
-
-        self.id = vehicle.id
+        self.vehicle_model = RealModel()
+        self.run_step = self._run_step_real
         return
 
 
-    def extend_route(self):
-        waypoint = self.global_path.carla_waypoints[-1]
-        sr = self.global_path.sampling_resolution
-        route = get_reference_route_wrt_waypoint(waypoint, sr, round(3*self.distance_range / sr))
-        self.global_path.extend(route[1:])
-
-
-    def run_step(self, reference):
-        target_v = self.get_target_v(reference)
-        for _ in range(self.skip_num):
-            self.clock.tick_begin()
-            control = self.get_control(target_v)
-            self.vehicle.apply_control(control)
-            self.clock.tick_end()
-        return
-    
-    def get_target_v(self, reference):
+    def get_target(self, reference):
         return self.max_velocity
     
     def get_transform(self):
@@ -80,37 +41,59 @@ class BaseAgent(object):
         current_transform = self.get_transform()
         current_v = self.get_current_v()
         return InnerConvert.CarlaTransformToState(None, None, current_transform, v=current_v)
-    
-    def goal_reached(self, preview_distance):
-        return self.global_path.reached(preview_distance)
 
-    def get_control(self, target_v):
-        if self.goal_reached(5.0):
+
+    def get_control(self, target):
+        if self.goal_reached(0.0):
             self.extend_route(); #print('[BaseAgent] extend route!')
+
+        target = self.max_velocity  ### TODO delete
 
         current_transform = self.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
-        if self.debug: draw_arrow(self.world, target_waypoint.transform, life_time=0.1)
+        # draw_arrow(self.world, target_waypoint.transform, life_time=0.1)
 
         current_v = self.get_current_v()
         current_state = InnerConvert.CarlaTransformToState(None, None, current_transform, v=current_v)
-        target_state = InnerConvert.CarlaTransformToState(None, None, target_waypoint.transform, v=target_v, k=curvature)
+        target_state = InnerConvert.CarlaTransformToState(None, None, target_waypoint.transform, v=target, k=curvature)
         control = self.controller.run_step(current_state, target_state)
         return control
     
-
-    def destroy(self):
-        self.sensors_master.destroy()
-        self.vehicle.destroy()
-    
-    def destroy_commands(self):
-        cmds = self.sensors_master.destroy_commands()
-        cmds.append(DestroyActor(self.vehicle))
-        return cmds
+    def forward(self, control):
+        self.vehicle_model(self.vehicle, control)
     
 
-    def check_collision(self):
-        return self.sensors_master[('sensor.other.collision', 'default')].get_raw_data() is not None
+class BaseAgentPseudo(BaseAgent, AgentABC):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path):
+        super(BaseAgentPseudo, self).__init__(config, world, town_map, vehicle, sensors_master, global_path)
 
+        self.pseudo, self.fast = True, config.fast
 
+        self._current_transform = self.vehicle.get_transform()
+        self._current_v = 0.0
+
+        self.vehicle_model = BicycleModel2D(self.dt, self.wheelbase)
+        self.run_step = self._run_step_pseudo
+
+    
+    def get_transform(self):
+        return self._current_transform
+    def get_current_v(self):
+        return self._current_v
+
+    def tick_transform(self):
+        self._current_transform = self.vehicle.get_transform()
+
+    def forward(self, control):
+        acceleration = self.controller.control_to_acceleration(control)
+        action = (acceleration, control.steer)
+
+        current_state = self.get_state()
+        next_state = self.vehicle_model(current_state, action)
+        x, y, theta, v = next_state.x, next_state.y, next_state.theta, next_state.v
+
+        self._current_transform = carla.Transform(carla.Location(x=x, y=y), carla.Rotation(yaw=np.rad2deg(theta)))
+        self._current_v = v
+        return
         
+

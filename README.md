@@ -9,6 +9,10 @@
 - (optional) ROS
 ```
 
+```bash
+pip install torch
+```
+
 ## 1. setup
 
 ```bash
@@ -37,6 +41,9 @@ cd PythonAPI/util/ && ./config.py
 
 python -m carla_utils.run
 python -m carla_utils.config
+
+### visualize in ROS
+python -m carla_utils.ros.template
 ```
 
 ## others

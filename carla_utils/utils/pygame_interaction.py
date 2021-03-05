@@ -346,7 +346,7 @@ class HUD(object):
             '',
             'Speed:   % 15.0f km/h' % (3.6 * np.sqrt(v.x**2 + v.y**2 + v.z**2)),
             'Accelero: %14.1f m/s2' % (np.sqrt(a.x**2 + a.y**2 + a.z**2)),
-            'Location:% 20s' % ('(% 5.1f, % 5.1f)' % (t.location.x, t.location.y)),
+            'Location:% 20s' % ('(% 5.1f, % 5.1f, % 3.1f)' % (t.location.x, t.location.y, t.location.z)),
             'Height:  % 18.0f m' % t.location.z,
             '']
         self._info_text += [

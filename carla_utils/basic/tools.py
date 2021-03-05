@@ -7,13 +7,28 @@ import copy
 '''
 https://stackoverflow.com/questions/15927755/opposite-of-numpy-unwrap
 '''
-def pi2pi(theta, theta0=0.0):
-    # while(theta > np.pi + theta0):
-    #     theta = theta - 2.0 * np.pi
-    # while(theta < -np.pi + theta0):
-    #     theta = theta + 2.0 * np.pi
-    # return theta
+def pi2pi(theta):
+    if isinstance(theta, np.ndarray) or isinstance(theta, float):
+        return pi2pi_numpy(theta)
+    elif isinstance(theta, torch.Tensor):
+        return pi2pi_numpy(theta)
+    else: raise NotImplementedError
+    
+
+def pi2pi_numpy(theta):
     return (theta + np.pi) % (2 * np.pi) - np.pi
+
+def pi2pi_tensor(theta):
+    """
+    Normalize the `theta` to have a value in [-pi, pi]
+
+    Args:
+        theta: Tensor of angles of shape N
+    """
+    TWO_PI = 2 * np.pi
+    theta = torch.fmod(torch.fmod(theta, TWO_PI) + TWO_PI, TWO_PI)
+    return torch.where(theta > np.pi, theta - TWO_PI, theta)
+
 
 def np_dot(*args):
     res = args[0]

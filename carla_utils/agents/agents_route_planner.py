@@ -12,7 +12,7 @@ from ..world_map import draw_waypoints, get_reference_route_wrt_waypoint
 
 
 class AgentsRoutePlanner(object):
-    def __init__(self, world, town_map, config):
+    def __init__(self, config, world, town_map):
         '''
         Args:
             config: need to contain:

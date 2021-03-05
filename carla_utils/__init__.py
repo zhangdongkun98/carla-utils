@@ -24,8 +24,9 @@ from . import sensor
 
 '''agents'''
 from .agents import AgentsRoutePlanner, Controller
-from .agents import BaseAgent, NaiveAgent, IDMAgent
-from .agents import BaseAgentPseudo, NaiveAgentPseudo
+from .agents import BaseAgent, BaseAgentPseudo
+from .agents import NaiveAgent, NaiveAgentPseudo
+from .agents import IDMAgent
 from .agents import AgentListMaster
 from .agents import AgentsRecorder
 

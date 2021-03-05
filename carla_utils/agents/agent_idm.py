@@ -11,7 +11,7 @@ from .tools import get_leading_agent_unsafe
 from .agent_naive import AgentState
 
 class IDMAgent(BaseAgent):
-    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path):
         BaseAgent.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
         # Agent.__init__(self, vehicle)
 

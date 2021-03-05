@@ -52,3 +52,12 @@ def side_location_2d(transform, half_width):
     direction = np.array([np.cos(theta + np.pi/2), np.sin(theta + np.pi/2)])
     left, right = center + half_width * direction, center - half_width * direction
     return carla.Location(left[0], left[1]), carla.Location(right[0], right[1])
+
+
+
+def vehicle_wheelbase(vehicle: carla.Vehicle):
+    if vehicle.type_id == 'vehicle.tesla.model3':
+        wheelbase = 2.875
+    else: raise NotImplementedError
+    return wheelbase
+

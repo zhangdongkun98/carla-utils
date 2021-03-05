@@ -65,12 +65,12 @@ class AgentListMaster(object):
 
 
     def _run_step_real(self, references):
-        target_v_list = [agent.get_target_v(reference) for agent, reference in zip(self.agents, references)]
+        target_list = [agent.get_target(reference) for agent, reference in zip(self.agents, references)]
         for _ in range(self.skip_num):
             self.clock.tick_begin()
             batch = []
-            for agent, target_v in zip(self.agents, target_v_list):
-                control = agent.get_control(target_v)
+            for agent, target in zip(self.agents, target_list):
+                control = agent.get_control(target)
                 batch.append(ApplyVehicleControl(agent.vehicle, control))
             self.client.apply_batch_sync(batch)
             self.clock.tick_end()
@@ -78,13 +78,14 @@ class AgentListMaster(object):
     
     def _run_step_pseudo(self, references):
         [agent.tick_transform() for agent in self.agents]
-        target_v_list = [agent.get_target_v(reference) for agent, reference in zip(self.agents, references)]
+        target_list = [agent.get_target(reference) for agent, reference in zip(self.agents, references)]
         for _ in range(self.skip_num):
             self.clock.tick_begin()
-            for agent, target_v in zip(self.agents, target_v_list):
-                agent.next_transform(target_v)
+            for agent, target in zip(self.agents, target_list):
+                control = agent.get_control(target)
+                agent.forward(control)
             if not self.fast: self.clock.tick_end()
-        batch = [ApplyTransform(agent.vehicle, agent.get_transform_pesudo()) for agent in self.agents]
+        batch = [ApplyTransform(agent.vehicle, agent.get_transform()) for agent in self.agents]
         self.client.apply_batch_sync(batch)
         return
     

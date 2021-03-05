@@ -19,7 +19,7 @@ class AgentState(Enum):
 
 
 class NaiveAgent(BaseAgent):
-    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path=None):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path):
         BaseAgent.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
 
         self.leading_range = 15.0
@@ -52,3 +52,13 @@ class NaiveAgent(BaseAgent):
 
         target_v = -1.0 if hazard_detected else self.max_velocity
         return target_v
+
+
+
+
+from .agent_base import BaseAgentPseudo
+class NaiveAgentPseudo(BaseAgentPseudo, NaiveAgent):
+    def __init__(self, config, world, town_map, vehicle, sensors_master, global_path):
+        NaiveAgent.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
+        BaseAgentPseudo.__init__(self, config, world, town_map, vehicle, sensors_master, global_path)
+
