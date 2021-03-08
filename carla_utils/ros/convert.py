@@ -1,4 +1,4 @@
-
+import carla
 import rospy, tf
 
 import numpy as np
@@ -9,6 +9,7 @@ from geometry_msgs.msg import TransformStamped
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
+from ..augment import State, GlobalPath
 
 
 def header(frame_id, timestamp):
@@ -24,7 +25,6 @@ def CarlaWaypointToGeoPoint(waypoint):
     point.y = waypoint.transform.location.y
     point.z = waypoint.transform.location.z
     return point
-
 
 
 '''
@@ -58,6 +58,47 @@ def CarlaTransformToGeoTransformStamped(frame_id, timestamp, child_frame_id, tra
     geo_transform.transform.rotation.z = quaternion[2]
     geo_transform.transform.rotation.w = quaternion[3]
     return geo_transform
+
+
+class GeoPoseStamped(object):
+    @staticmethod
+    def cua_state(state: State):
+        pose = PoseStamped()
+        pose.header = header(state.frame_id, state.timestamp)
+        pose.pose.position.x = state.x
+        pose.pose.position.y = state.y
+        pose.pose.position.z = state.z
+
+        quaternion = tf.transformations.quaternion_from_euler(0, 0, state.theta)
+        pose.pose.orientation.x = quaternion[0]
+        pose.pose.orientation.y = quaternion[1]
+        pose.pose.orientation.z = quaternion[2]
+        pose.pose.orientation.w = quaternion[3]
+        return pose
+    
+    def carla_transform(frame_id, timestamp, transform: carla.Transform):
+        pose = PoseStamped()
+        pose.header = header(frame_id, timestamp)
+        pose.pose.position.x = transform.location.x
+        pose.pose.position.y = transform.location.y
+        pose.pose.position.z = transform.location.z
+
+        roll, pitch, yaw = transform.rotation.roll, transform.rotation.pitch, transform.rotation.yaw
+        quaternion = tf.transformations.quaternion_from_euler(np.deg2rad(roll), np.deg2rad(pitch), np.deg2rad(yaw))
+        pose.pose.orientation.x = quaternion[0]
+        pose.pose.orientation.y = quaternion[1]
+        pose.pose.orientation.z = quaternion[2]
+        pose.pose.orientation.w = quaternion[3]
+        return pose
+
+
+def CUAGlobalPathToNavPath(global_path: GlobalPath):
+    path = Path()
+    path.header = header(global_path.frame_id, global_path.timestamp)
+    path.poses = [GeoPoseStamped.carla_transform(global_path.frame_id, global_path.timestamp, wp.transform) for wp in global_path.carla_waypoints]
+    return path
+
+
 
 
 class NonCoConvertion(object):

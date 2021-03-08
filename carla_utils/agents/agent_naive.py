@@ -26,7 +26,7 @@ class NaiveAgent(BaseAgent):
         assert self.leading_range < self.distance_range
     
 
-    def get_target_v(self, reference):
+    def get_target(self, reference):
         agents = reference
         hazard_detected = False
 
@@ -50,8 +50,8 @@ class NaiveAgent(BaseAgent):
             self._state = AgentState.BLOCKED_BY_VEHICLE
             hazard_detected = True
 
-        target_v = -1.0 if hazard_detected else self.max_velocity
-        return target_v
+        target = -1.0 if hazard_detected else self.max_velocity
+        return target
 
 
 

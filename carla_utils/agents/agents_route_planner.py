@@ -24,7 +24,7 @@ class AgentsRoutePlanner(object):
         '''
         self.world, self.town_map = world, town_map
 
-        self.global_frame_id = config.get('global_frame_id', 'odom')
+        self.global_frame_id = config.get('global_frame_id', 'map')
         self.vehicle_frame_id = config.get('vehicle_frame_id', 'base_link')
         self.goal_tolerance = config.goal_tolerance
         self.sampling_resolution = config.sampling_resolution
@@ -36,7 +36,7 @@ class AgentsRoutePlanner(object):
         self.grp.setup()
 
 
-    def trace_route(self, origin, destination, time_stamp=time.time()):
+    def trace_route(self, origin, destination, timestamp=time.time()):
         '''
         Args:
             origin, destination: carla.Location
@@ -52,7 +52,7 @@ class AgentsRoutePlanner(object):
                 delete_index_list.append(i+1)
         basic.list_del(simplified_route, delete_index_list)
 
-        return GlobalPath(self.global_frame_id, time_stamp, simplified_route)
+        return GlobalPath(self.global_frame_id, timestamp, simplified_route)
 
     def is_goal_reached(self, current_state, global_path):
         distance = current_state.distance(global_path.destination)

@@ -43,8 +43,9 @@ class AgentABC(ABC):
         self.global_path: GlobalPath = global_path
 
         self.id = vehicle.id
-        self.dt, self.wheelbase = 1.0/self.control_frequency, vehicle_wheelbase(self.vehicle)
-        self.controller = Controller(config, self.dt, self.wheelbase)
+        self.decision_dt, self.control_dt = 1.0/self.decision_frequency, 1.0/self.control_frequency
+        self.wheelbase = vehicle_wheelbase(self.vehicle)
+        self.controller = Controller(config, self.control_dt, self.wheelbase)
         self.max_velocity = float(config.get('max_velocity', 8.34))
         self.max_acceleration = self.controller.max_acceleration
         self.min_acceleration = self.controller.min_acceleration
@@ -82,10 +83,10 @@ class AgentABC(ABC):
 
 
     def _run_step_real(self, reference):
-        print('[AgentABC] gagag   here')
         target = self.get_target(reference)
         for _ in range(self.skip_num):
             self.clock.tick_begin()
+            if self.goal_reached(5.0): self.extend_route()
             control = self.get_control(target)
             self.forward(control)
             self.clock.tick_end()
@@ -105,6 +106,7 @@ class AgentABC(ABC):
         target = self.get_target(reference)
         for _ in range(self.skip_num):
             self.clock.tick_begin()
+            if self.goal_reached(5.0): self.extend_route()
             control = self.get_control(target)
             self.forward(control)
             if not self.fast: self.clock.tick_end()

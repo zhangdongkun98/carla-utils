@@ -5,7 +5,7 @@ import pygame
 import os
 from os.path import join
 
-from ..system import parse_yaml_file_unsafe
+from ..system import parse_yaml_file_unsafe, Clock
 from ..sensor import createSensorListMaster
 from ..world_map import connect_to_server, add_vehicle, Role, Scenario
 
@@ -20,8 +20,8 @@ class EgoVehicle(object):
         '''parameter'''
 
         self.frequency = 20
-        self.clock = pygame.time.Clock()
-        
+        self.clock = Clock(self.frequency)
+        self.pseudo, self.fast = config.pseudo, config.fast
         host, port, timeout, map_name = config.host, config.port, config.timeout, config.map_name
 
         client, world, town_map = connect_to_server(host, port, timeout, map_name)
@@ -32,7 +32,7 @@ class EgoVehicle(object):
         self.global_frame_id, self.vehicle_frame_id = 'odom', 'vehicle'
         role_name, type_id = config.role_name, config.type_id
         spawn_point = random.choice(self.scenario.spawn_points)
-        self.vehicle = add_vehicle(world, town_map, spawn_point, type_id, role_name=Role(vi=0, name=role_name))
+        self.vehicle = add_vehicle(world, town_map, not self.pseudo, spawn_point, type_id, role_name=Role(vi=0, name=role_name))
         self.sensor_manager = createSensorListMaster(client, world, self.vehicle, sensors_params)
         print('[ego_vehicle] ego_vehicle id: ', self.vehicle.id)
 
@@ -52,14 +52,14 @@ class EgoVehicle(object):
 
 
     def run_step(self):
-        pass
+        return
 
     def run(self):
         while True:
-            self.clock.tick_busy_loop(self.frequency)
+            self.clock.tick_begin()
             self.run_step()
             self.pygame_interaction.tick()
- 
+            if not self.fast: self.clock.tick_end()
 
 
 if __name__ == '__main__':

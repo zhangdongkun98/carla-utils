@@ -14,6 +14,7 @@ from . import convert
 
 def GlobalRoute(frame_id, timestamp, waypoints):
     color = ColorRGBA(0.5, 0.5, 1.0, 1.0)
+    scale = 0.2
 
     route = Marker()
     route.header = convert.header(frame_id, timestamp)
@@ -24,9 +25,9 @@ def GlobalRoute(frame_id, timestamp, waypoints):
     route.lifetime = rospy.Duration(0.0)
     route.frame_locked = False
     route.pose.orientation.w = 1.0
-    route.scale.x = 1.0
-    route.scale.y = 1.0
-    route.scale.z = 1.0
+    route.scale.x = 1.0 *scale
+    route.scale.y = 1.0 *scale
+    route.scale.z = 1.0 *scale
     route.color = color
 
     route.points = [convert.CarlaWaypointToGeoPoint(wp) for wp in waypoints]
@@ -54,9 +55,9 @@ def Junctions(frame_id, timestamp, waypoint_pairs):
     junctions.lifetime = rospy.Duration(0.0)
     junctions.frame_locked = False
     junctions.pose.orientation.w = 1.0
-    junctions.scale.x = 2.0
-    junctions.scale.y = 2.0
-    junctions.scale.z = 2.0
+    junctions.scale.x = 1.0
+    junctions.scale.y = 1.0
+    junctions.scale.z = 1.0
     junctions.color = color
 
     junctions.points = [convert.CarlaWaypointToGeoPoint(wp) for wp in waypoints]

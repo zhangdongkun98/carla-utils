@@ -4,7 +4,7 @@ import numpy as np
 
 from ..augment import GlobalPath, InnerConvert, vector3DNorm
 from .agent_abc import AgentABC
-from .vehicle_model import RealModel, BicycleModel2D
+from .vehicle_model import RealModel, BicycleModel2D, SteerModel
 
 
 class BaseAgent(AgentABC):
@@ -25,6 +25,7 @@ class BaseAgent(AgentABC):
 
         self.pseudo = False
 
+        self.steer_model = SteerModel(self.control_dt, alpha=0.0)
         self.vehicle_model = RealModel()
         self.run_step = self._run_step_real
         return
@@ -44,11 +45,6 @@ class BaseAgent(AgentABC):
 
 
     def get_control(self, target):
-        if self.goal_reached(0.0):
-            self.extend_route(); #print('[BaseAgent] extend route!')
-
-        target = self.max_velocity  ### TODO delete
-
         current_transform = self.get_transform()
         target_waypoint, curvature = self.global_path.target_waypoint(current_transform)
         # draw_arrow(self.world, target_waypoint.transform, life_time=0.1)
@@ -60,6 +56,7 @@ class BaseAgent(AgentABC):
         return control
     
     def forward(self, control):
+        # control.steer = self.steer_model(control.steer)
         self.vehicle_model(self.vehicle, control)
     
 
@@ -95,5 +92,5 @@ class BaseAgentPseudo(BaseAgent, AgentABC):
         self._current_transform = carla.Transform(carla.Location(x=x, y=y), carla.Rotation(yaw=np.rad2deg(theta)))
         self._current_v = v
         return
-        
+
 

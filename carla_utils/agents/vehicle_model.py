@@ -11,7 +11,7 @@ from ..augment import State
 class RealModel(object):
     def __call__(self, *args):
         return self.forward(*args)    
-    def forward(_, vehicle, control):
+    def forward(self, vehicle, control):
         vehicle.apply_control(control)
 
 
@@ -57,4 +57,17 @@ class BicycleModel2DParallel(nn.Module):
         return next_state
 
 
+
+class SteerModel(RealModel):
+    def __init__(self, dt, alpha=0.0):
+        self.dt = dt
+        self.xk, self.y = 0.0, 0.0
+        self.alpha = alpha
+    
+    def forward(self, u):
+        self.y = self.xk
+        # alpha = np.clip(self.alpha + np.clip(np.random.normal(scale=0.2), -0.2, 0.2), 0, 1)
+        alpha = self.alpha
+        self.xk = alpha * self.xk + (1-alpha) * u
+        return self.y
 

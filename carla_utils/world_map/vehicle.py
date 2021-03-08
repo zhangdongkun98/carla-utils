@@ -18,7 +18,7 @@ def vehicle_frame_id(vehicle):
     return vfid
 
 
-def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer', **attributes):
+def add_vehicle(world, town_map, enable_physics, spawn_point, type_id='vehicle.bmw.grandtourer', **attributes):
     """
     
     
@@ -36,6 +36,7 @@ def add_vehicle(world, town_map, spawn_point, type_id='vehicle.bmw.grandtourer',
     if spawn_point:
         spawn_transform = get_spawn_transform(town_map, spawn_point, height=0.2)
     vehicle = world.spawn_actor(bp, spawn_transform)
+    vehicle.set_simulate_physics(enable_physics)
     tick_world(world)
     print('spawn_point: x={}, y={}'.format(vehicle.get_location().x, vehicle.get_location().y))
     return vehicle

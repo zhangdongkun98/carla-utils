@@ -1,8 +1,12 @@
 
+import os
 import numpy as np
+import random
+import copy
+
 import torch
 import torch.nn as nn
-import copy
+
 
 '''
 https://stackoverflow.com/questions/15927755/opposite-of-numpy-unwrap
@@ -120,3 +124,16 @@ def calculate_quadrant(point):
     else:
         quadrant = 0
     return quadrant
+
+
+
+def setup_seed(seed):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+
+

@@ -12,7 +12,9 @@ def create_dir(config, model_name):
         create dir and save config
         Args:
             config: need to contain:
-                config.description
+                config.description: str
+                config.method: str
+                config.eval: bool
     '''
     if config.eval: model_name = '000-eval/' + model_name
     dataset_name = model_name + '/' + config.method + '--' + str(int(time.time())) + '----' + str(config.description)
@@ -25,8 +27,8 @@ def create_dir(config, model_name):
     with open(join('results', dataset_name, 'comments'), mode='w', encoding='utf-8') as _: pass
     config.save(join('results', dataset_name))
 
-    writter = Writer(log_dir=log_path, comment=dataset_name)
-    return PathPack(log_path, save_model_path, output_path), writter
+    writer = Writer(log_dir=log_path, comment=dataset_name)
+    return PathPack(log_path, save_model_path, output_path), writer
 
 
 class Writer(SummaryWriter):

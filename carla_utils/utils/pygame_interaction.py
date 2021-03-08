@@ -319,9 +319,12 @@ class HUD(object):
 
     def tick(self, clock):
         self._notifications.tick(clock)
-        carla_image = self.sensors_master.get_camera().get_raw_data()
-        if carla_image is None: print('[pygame_interaction] tick: warning'); return
-        self._surface = make_surface(carla_image)
+
+        if self.sensors_master.get_camera() != None:
+            carla_image = self.sensors_master.get_camera().get_raw_data()
+            if carla_image == None: print('[pygame_interaction] tick: warning'); return
+            self._surface = make_surface(carla_image)
+
         if not self._show_info:
             self._info_text = []
             return
@@ -389,12 +392,13 @@ class HUD(object):
     def render(self, display):
         display.fill((255,255,255))
 
-        size = self._surface.get_size()
-        desired_aspect_ratio = float(size[0]) / float(size[1])
-        dim1 = (self.dim[0], round(self.dim[0]/desired_aspect_ratio))
-        dim2 = (round(self.dim[1]*desired_aspect_ratio), self.dim[1])
-        scaled_size = min(dim1, dim2)
-        display.blit(pygame.transform.scale(self._surface, scaled_size), (0, 0))
+        if hasattr(self, '_surface'):
+            size = self._surface.get_size()
+            desired_aspect_ratio = float(size[0]) / float(size[1])
+            dim1 = (self.dim[0], round(self.dim[0]/desired_aspect_ratio))
+            dim2 = (round(self.dim[1]*desired_aspect_ratio), self.dim[1])
+            scaled_size = min(dim1, dim2)
+            display.blit(pygame.transform.scale(self._surface, scaled_size), (0, 0))
 
         info_surface = pygame.Surface((220, self.dim[1]))
         alpha = 100 if self._show_info else 0

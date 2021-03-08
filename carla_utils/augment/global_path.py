@@ -146,7 +146,7 @@ class GlobalPath(object):
 
     def next_waypoint(self, current_transform, distance):
         '''
-            TODO test on more scenes besides single lane, error is less than 10cm when sampling_resolution is 20cm
+            (warning: inaccurate) test on more scenes besides single lane, error is less than 10cm when sampling_resolution is 20cm
             Args:
                 current_transform: carla.Transform
         '''

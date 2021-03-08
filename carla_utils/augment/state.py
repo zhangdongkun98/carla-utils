@@ -7,7 +7,7 @@ from .. import basic
 from .tools import vector3DToArray
 
 
-def getActorState(frame_id, time_stamp, actor):
+def getActorState(frame_id, timestamp, actor):
     location = actor.get_location()
     x, y, z = location.x, location.y, location.z
     theta = np.deg2rad(actor.get_transform().rotation.yaw)
@@ -15,14 +15,14 @@ def getActorState(frame_id, time_stamp, actor):
     v = np.linalg.norm(velocity)
     acceleration = vector3DToArray(actor.get_acceleration())
     a = np.linalg.norm(acceleration)
-    return State(frame_id, time_stamp, x=x, y=y, z=z, theta=theta, v=v, a=a)
+    return State(frame_id, timestamp, x=x, y=y, z=z, theta=theta, v=v, a=a)
 
 
 
 class State(object):
-    def __init__(self, frame_id, time_stamp, **kwargs):
+    def __init__(self, frame_id, timestamp, **kwargs):
         self.frame_id = frame_id
-        self.time_stamp = time_stamp
+        self.timestamp = timestamp
 
         self.x = float(kwargs.get('x', 0))
         self.y = float(kwargs.get('y', 0))
@@ -42,7 +42,7 @@ class State(object):
         
 
     def __str__(self):
-        obj = 'frame_id: {}, time_stamp: {}, x: {}, y: {}, theta: {}, v: {}'.format(self.frame_id, self.time_stamp, self.x, self.y, self.theta, self.v)
+        obj = 'frame_id: {}, timestamp: {}, x: {}, y: {}, theta: {}, v: {}'.format(self.frame_id, self.timestamp, self.x, self.y, self.theta, self.v)
         return obj
 
 
@@ -103,7 +103,7 @@ class State(object):
         # theta_local = delta_theta
 
         local_state = State(
-                local_frame_id, self.time_stamp, x=x_local, y=y_local, theta=delta_theta,
+                local_frame_id, self.timestamp, x=x_local, y=y_local, theta=delta_theta,
                 z=self.z, k=self.k, s=self.s, v=self.v, t=self.t
                 )
         return local_state
@@ -121,7 +121,7 @@ class State(object):
         theta_world = basic.pi2pi(theta_local + theta0)
 
         world_state = State(
-                world_frame_id, self.time_stamp, x=x_world, y=y_world, theta=theta_world,
+                world_frame_id, self.timestamp, x=x_world, y=y_world, theta=theta_world,
                 z=self.z, k=self.k, s=self.s, v=self.v, a=self.a, t=self.t
                 )
         return world_state
