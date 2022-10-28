@@ -1,0 +1,13 @@
+rldev==0.0.2
+
+networkx==2.5
+python-intervals==1.10.0.post1
+Shapely==1.7.1
+
+
+### optional
+ray==1.13.0
+
+opencv-python==4.3.0.36
+open3d==0.8.0.0
+pygame==1.9.6
