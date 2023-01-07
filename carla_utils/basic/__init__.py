@@ -14,6 +14,6 @@ from .coordinate_transformation import HomogeneousMatrix, HomogeneousMatrixInver
 
 from rldev import image_transforms, image_transforms_reverse
 
-from rldev import create_dir, Writer, Data
+from rldev import create_dir, Writer, Data, BaseData
 
 from rldev import YamlConfig

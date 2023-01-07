@@ -125,7 +125,8 @@ class Visualizer(object):
                 color = actor.attributes.get('color', '190,190,190')
             color = np.array(eval(color)).astype(np.float64) / 255
 
-            if cu.Role.loads(actor.attributes['role_name']).atype == cu.ScenarioRole.learnable:
+            role_name = actor.attributes['role_name']
+            if cu.Role.loads(role_name).atype == cu.ScenarioRole.learnable or role_name.startswith('hero'):
                 origin = ActorVertices.origin(actor)
                 r = patches.Rectangle(origin.point, origin.y_length, origin.x_length, angle=np.rad2deg(origin.theta)-90, color=color, alpha=0.75)
                 self.ax.add_patch(r)
