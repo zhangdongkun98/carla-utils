@@ -11,7 +11,7 @@ if __name__ == "__main__":
     for arg in sys.argv[1:]:
         args += ' ' + arg
 
-    server_path = os.environ['CARLAPATH']
+    server_path = os.environ['CARLA_ROOT']
 
     target_path = join(server_path, 'PythonAPI/util/')
     os.chdir(target_path)

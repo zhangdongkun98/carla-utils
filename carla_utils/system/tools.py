@@ -9,9 +9,9 @@ import psutil
 
 def load_carla():
     try:
-        server_path = os.environ['CARLAPATH']
+        server_path = os.environ['CARLA_ROOT']
     except:
-        print('run this in shell:\n    echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc')
+        print('run this in shell:\n    echo "export CARLA_ROOT=/your/carla/server/path" >> ~/.bashrc')
         exit(0)
     try:
         sys.path.append(server_path+'/PythonAPI/carla')
@@ -21,7 +21,7 @@ def load_carla():
             'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
     except:
         print('Fail to load carla library')
-        print('run this in shell:\n    echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc')
+        print('run this in shell:\n    echo "export CARLA_ROOT=/your/carla/server/path" >> ~/.bashrc')
         exit(0)
 
 
@@ -31,9 +31,9 @@ def load_carla_py():
     except:
         return False
     try:
-        server_path = os.environ['CARLAPATH']
+        server_path = os.environ['CARLA_ROOT']
     except:
-        print('run this in shell:\n    echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc')
+        print('run this in shell:\n    echo "export CARLA_ROOT=/your/carla/server/path" >> ~/.bashrc')
         exit(0)
     sys.path.append(carla_py_path)
     sys.path.append(server_path+'/PythonAPI/carla')
@@ -46,7 +46,7 @@ def load_carla_py():
 
 new_versions = ['0.9.12', '0.9.13']
 def get_carla_version():
-    server_path = os.environ['CARLAPATH']
+    server_path = os.environ['CARLA_ROOT']
     carla_version = server_path.split('/')[-1].split('_')[-1]
     return carla_version
 

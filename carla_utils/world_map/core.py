@@ -193,7 +193,7 @@ def generate_server_cmd(port, gpu_index=0, low_quality=True, use_opengl=True, no
     if carla_version in new_versions:
         use_opengl = False
 
-    cmd = join(os.environ['CARLAPATH'], 'CarlaUE4.sh')
+    cmd = join(os.environ['CARLA_ROOT'], 'CarlaUE4.sh')
 
     cmd += ' -carla-rpc-port=' + str(port)
     cmd = 'SDL_HINT_CUDA_DEVICE={} '.format(gpu_index) + cmd

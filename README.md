@@ -36,7 +36,7 @@ sudo apt install vulkan-utils
 
 ```bash
 pip install -r requirements.txt
-echo "export CARLAPATH=/your/carla/server/path" >> ~/.bashrc
+echo "export CARLA_ROOT=/your/carla/server/path" >> ~/.bashrc
 pip install -e .
 ```
 
@@ -44,7 +44,7 @@ pip install -e .
 ## Usage
 
 ```bash
-cd $CARLAPATH
+cd $CARLA_ROOT
 ./CarlaUE4.sh
 cd PythonAPI/util/ && ./config.py
 

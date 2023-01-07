@@ -114,7 +114,7 @@ class TownMapImage(object):
         opendrive_hash = str(hash_func.hexdigest())
 
         # Build path for saving or loading the cached rendered map
-        dirname = os.path.join(os.environ['CARLAPATH'], 'MapCache')
+        dirname = os.path.join(os.environ['CARLA_ROOT'], 'MapCache')
         filename = self.town_map.name + '_' + opendrive_hash + '.png'
         full_path = os.path.join(dirname, filename)
 
