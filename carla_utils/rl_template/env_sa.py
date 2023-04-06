@@ -163,6 +163,8 @@ class EnvSingleAgent(ABC):
         ### experience
         reward = torch.tensor([reward], dtype=torch.float32)
         done = torch.tensor([epoch_done], dtype=torch.float32)
+        if done == True:
+            self.on_episode_end()
         experience = Experience(
             state=state, action=action, next_state=next_state, reward=reward,
             done=done, timestamp=timestamp,
@@ -197,6 +199,8 @@ class EnvSingleAgent(ABC):
         ### experience
         reward = torch.tensor([reward], dtype=torch.float32)
         done = torch.tensor([epoch_done], dtype=torch.float32)
+        if done == True:
+            self.on_episode_end()
         experience = Experience(
             state=state, action=action, next_state=next_state, reward=reward,
             done=done, timestamp=timestamp,
