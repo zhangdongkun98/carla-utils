@@ -112,7 +112,8 @@ def create_blueprint(core, type_id, **attributes):
     blueprint_lib = world.get_blueprint_library()
 
     blueprint_lib = blueprint_lib.filter(type_id)
-    blueprint_lib = [x for x in blueprint_lib if int(x.get_attribute('number_of_wheels')) == 4]
+    # blueprint_lib = [x for x in blueprint_lib if int(x.get_attribute('number_of_wheels')) == 4]
+    blueprint_lib = [x for x in blueprint_lib]
     bp = random.choice(blueprint_lib)
 
     role_name: Role = attributes.get('role_name', Role(name='hero'))
