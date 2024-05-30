@@ -166,7 +166,11 @@ class ActorVertices(object):
 
     @staticmethod
     def bbx(bounding_box):
-        t = carla.Transform(location=bounding_box.location, rotation=bounding_box.rotation)
+        if hasattr(bounding_box, 'rotation'):
+            rotation = bounding_box.rotation
+        else:
+            rotation = carla.Rotation()
+        t = carla.Transform(location=bounding_box.location, rotation=rotation)
         dx, dy = bounding_box.extent.x, bounding_box.extent.y
         center_x, center_y, theta = t.location.x, t.location.y, np.deg2rad(t.rotation.yaw)
 
