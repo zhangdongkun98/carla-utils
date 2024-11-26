@@ -96,11 +96,11 @@ class Visualizer(object):
             self.background_topology = [t.info for t in topology]
             self.junctions = cu.get_junctions(topology)
         for t in self.background_topology:
-            line = self.ax.plot(t.x, t.y)[0]
-        for junction in self.junctions:
-            vertices = ActorVertices.bbx(junction.bounding_box)
-            vertices = np.vstack([vertices, vertices[[0]]])
-            self.ax.plot(vertices[:,0], vertices[:,1], '-', linewidth=3)
+            line = self.ax.plot(t.x, t.y, color='lightgrey')[0]
+        # for junction in self.junctions:
+        #     vertices = ActorVertices.bbx(junction.bounding_box)
+        #     vertices = np.vstack([vertices, vertices[[0]]])
+        #     self.ax.plot(vertices[:,0], vertices[:,1], '-', color='lightgrey', linewidth=3)
         
         self.update_vis()
         return
@@ -122,14 +122,18 @@ class Visualizer(object):
             if actor.type_id.startswith('walker'):
                 color = '0,0,0'
             else:
-                color = actor.attributes.get('color', '190,190,190')
+                color = actor.attributes.get('color', '60,60,60')
             color = np.array(eval(color)).astype(np.float64) / 255
 
             role_name = actor.attributes['role_name']
+            # if cu.Role.loads(role_name).atype == cu.ScenarioRole.learnable or role_name.startswith('hero'):
             if cu.Role.loads(role_name).atype == cu.ScenarioRole.learnable or role_name.startswith('hero'):
-                origin = ActorVertices.origin(actor)
-                r = patches.Rectangle(origin.point, origin.y_length, origin.x_length, angle=np.rad2deg(origin.theta)-90, color=color, alpha=0.75)
-                self.ax.add_patch(r)
+                color = 'black'
+            else:
+                color = 'grey'
+            origin = ActorVertices.origin(actor)
+            r = patches.Rectangle(origin.point, origin.y_length, origin.x_length, angle=np.rad2deg(origin.theta)-90, color=color, alpha=0.9)
+            self.ax.add_patch(r)
             
             vertices, lines = ActorVertices.d2arrow(actor)
             vertices = np.vstack([vertices, vertices[[4]], vertices[[0]]])

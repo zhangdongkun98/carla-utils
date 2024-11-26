@@ -1,3 +1,4 @@
+import rldev
 from carla_utils import carla
 DestroyActor = carla.command.DestroyActor
 
@@ -48,14 +49,13 @@ def destroy_all_actors(core: Core):
 
 
 
-from ..basic import Data
-class Role(Data):
+class Role(rldev.BaseData):
     def dumps(self):
         return pickle.dumps(self, 0).decode()
     
     @staticmethod
     def loads(role_str):
-        if isinstance(role_str, Data):
+        if isinstance(role_str, rldev.BaseData):
             role = role_str
         else:
             try:

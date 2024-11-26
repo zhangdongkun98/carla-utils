@@ -140,21 +140,21 @@ class EnvSingleAgent(ABC):
         else:
             state = self.state
         ### action
-        action = method.select_action(state).cpu()
+        action_data = method.select_action(state).cpu()
         ### reward
         epoch_info = self._check_epoch()
-        reward = self.reward_function.run_step(state, action, self.agents_master, epoch_info)
+        reward = self.reward_function.run_step(state, action_data.action, self.agents_master, epoch_info)
         epoch_done = epoch_info.done
         
         ### record
         self.recorder.record_agents(self.time_step, self.agents_master, epoch_info)
-        self.recorder.record_experience(self.time_step, self.agents_master, action)
+        self.recorder.record_experience(self.time_step, self.agents_master, action_data.action)
         
         ### callback
         self.on_episode_step(reward, epoch_info)
 
         ### step
-        self.agents_master.run_step( action.action if isinstance(action, Data) else action )
+        self.agents_master.run_step( action_data.action )
 
         ### next_state
         next_state = self.agents_master.perception(self.step_reset, timestamp=-1)
@@ -166,7 +166,7 @@ class EnvSingleAgent(ABC):
         if done == True:
             self.on_episode_end()
         experience = Experience(
-            state=state, action=action, next_state=next_state, reward=reward,
+            state=state, action_data=action_data, next_state=next_state, reward=reward,
             done=done, timestamp=timestamp,
         )
         return experience, epoch_done, epoch_info

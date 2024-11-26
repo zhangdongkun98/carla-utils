@@ -133,7 +133,7 @@ class Visualizer(object):
 
             actors = self.world.get_actors()
             vehicles = actors.filter('*vehicle*')
-            self.run_step(list(vehicles))
+            self.run_step(list(vehicles), [])
             self.update_vis()
 
             self.clock.tick_end()
@@ -142,7 +142,8 @@ class Visualizer(object):
 
 if __name__ == "__main__":
     config = cu.basic.YamlConfig()
-    args = cu.utils.default_argparser().parse_args()
+    from carla_utils.utils import default_argparser
+    args = default_argparser().parse_args()
     config.update(args)
 
     vehicles_visualizer = Visualizer(config, )
