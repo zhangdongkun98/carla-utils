@@ -37,6 +37,7 @@ class EnvSingleAgent(ABC):
     scenario_cls = ScenarioSingleAgent
     recorder_cls = Recorder
     agents_master_cls = AgentListMaster
+    agent_cls = None
     reward_function_cls = RewardFunction
 
     sensors_params = []
@@ -60,6 +61,8 @@ class EnvSingleAgent(ABC):
         self.output_dir = join(self.path_pack.output_path, self.env_name)
         mkdir(self.output_dir)
 
+        self.control_frequency = config.get('control_frequency', self.control_frequency)
+        self.decision_frequency = config.get('decision_frequency', self.decision_frequency)
         self.clock = Clock(self.control_frequency)
         self.clock_decision = Clock(self.decision_frequency)
         self.step_reset = 0
@@ -80,8 +83,9 @@ class EnvSingleAgent(ABC):
         self.scenario: ScenarioSingleAgent = scenario_cls(config)
 
         agents_master_cls = self.config.get('agents_master_cls', self.agents_master_cls)
+        agent_cls = self.config.get('agent_cls', self.agent_cls)
         self.dim_state = agents_master_cls.dim_state
-        self.dim_action = agents_master_cls.dim_action
+        self.dim_action = agent_cls.dim_action
 
         self.init()
         return
@@ -229,8 +233,9 @@ class EnvSingleAgent(ABC):
         config.set('perception_range', cls.perception_range)
 
         agents_master_cls = config.get('agents_master_cls', cls.agents_master_cls)
+        agent_cls = config.get('agent_cls', cls.agent_cls)
         config.set('dim_state', agents_master_cls.dim_state)
-        config.set('dim_action', agents_master_cls.dim_action)
+        config.set('dim_action', agent_cls.dim_action)
 
         if mode == 'real':
             real = True

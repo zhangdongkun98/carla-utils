@@ -20,7 +20,7 @@ class Core(object):
         Inspired by https://github.com/carla-simulator/rllib-integration/blob/main/rllib_integration/carla_core.py
     '''
     def __init__(self, config: YamlConfig, map_name=None, settings=None, use_tm=False):
-        if config.get('mode', None) == 'evaluate':
+        if config.get('mode', None) == 'evaluate' or config.get('launch', False):
             env_index = config.env_index
             self.server = launch_server(env_index, gpu_index=0, start_port=config.port, sleep_time=20, low_quality=False)
             config.port = self.server.port

@@ -84,6 +84,14 @@ class GroundTruthRoute(object):
             states.append(state_local)
             xs.append(state_local.x)
             ys.append(state_local.y)
+        
+        if len(states) < 2:
+            states, xs, ys = [], [], []
+            for wp in waypoints[:int(self.dim_state /2)]:
+                state_local = cvt.CuaState.carla_transform(wp.transform).world2local(state0)
+                states.append(state_local)
+                xs.append(state_local.x)
+                ys.append(state_local.y)
 
         xs = np.asarray(xs)
         ys = np.asarray(ys)
@@ -93,7 +101,7 @@ class GroundTruthRoute(object):
         x_resample = np.interp(t_resample, t_origin, xs)
         y_resample = np.interp(t_resample, t_origin, ys)
 
-        route = np.hstack([x_resample, y_resample]).astype(np.float32) / self.perception_range
+        route = np.stack([x_resample, y_resample], axis=-1).astype(np.float32) / self.perception_range
         return route
 
         
